@@ -1,0 +1,515 @@
+<?xml version="1.0" encoding="utf-8"?>
+  <rss version="2.0"
+        xmlns:content="http://purl.org/rss/1.0/modules/content/"
+        xmlns:atom="http://www.w3.org/2005/Atom"
+  >
+  <channel>
+    <title>陈傻鸡</title>
+    <link href="http://mad4alcohol.github.com/feed/" rel="self" />
+    <link href="http://webfrogs.github.com" />
+    <lastBuildDate>2013-05-10T09:22:33+08:00</lastBuildDate>
+    <webMaster>ccf.developer@gmail.com</webMaster>
+    
+    <item>
+      <title>2012年的暑假总结</title>
+      <link href="http://mad4alcohol.github.com/2012/09/02/summer-summary/"/>
+      <pubDate>2012-09-02T00:00:00+08:00</pubDate>
+      <author>陈傻鸡</author>
+      <guid>http://mad4alcohol.github.com/2012/09/02/summer-summary</guid>
+      <content:encoded><![CDATA[<p>将近2两个月的暑假过去了，写点总结性的东西，填充一下文章的数量。</p>
+
+<h3>首先</h3>
+
+<p>还没考完试就被一个密码学的老师邀请去做东西，这是<em>第二次</em>跟着这个老师了，第一次退出是因为，做出来第一个小东西之后，就给我了一个<em>在我看来</em>很专业的东西，被吓尿，然后就发了封邮件，说打算以后有基础了再弄。这次也是没搞几天就退了。哎，弄的东西实在是提不起兴趣，而且用的尽是我不喜欢的技术（<a href="http://www.cplusplus.com/">洗屁屁</a>和<a href="http://www.java.com/">假娃</a>什么的），跟我最开始想去实验室干活的目的不一样。不过这次我也学到了两件事：</p>
+
+<blockquote><ul>
+<li>一是实验室永远用的都不会去用小众的东西，C就不说了，这货暂时还是不可替代的，cpp/java/c#可以说是大行其道，所以<strong>永远不要</strong>抱着<strong>试试Scala，Clojure之类的东西在实战中是个什么样子</strong>这种心态去找实验室，这是<strong>不可能</strong>的！想玩这些东西，呵呵，自己家里鼓捣鼓捣就算了吧。</li>
+<li>二是写任何东西，不可能做到<strong><font color="red">不去了解背景知识就能完成</font></strong>的。</li>
+</ul>
+</blockquote>
+
+<h3>然后</h3>
+
+<p>是跟另外一个同学一起做了一个比较坑的东西：python做一个特定领域搜索网站的爬虫。呵呵，坑人的地方就在于——<strong>要爬<font color="red">所有</font>东西下来</strong>！！而且，最开始还不知道这个需求，所以信誓旦旦地根据以前的经验说3天拿下，但是最后需求变得越来越，怎么说，烦人。最后是花了快20天，呵呵。收获就是，熟悉了一下python的线程（以前只有单线程抓东西，和actor模型的经验）和基础的pyqt。</p>
+
+<h3>再然后</h3>
+
+<p>想在github上搭一个博客，以前试过<a href="https://github.com/hyde/hyde">Hyde</a>这个python写的静态网站生成器，但是文档太少，所以放弃了。于是这次试了Jekyll（准确的说是<a href="http://jekyllbootstrap.com">Jekyll-Bootstrap</a>。配置也不是很难，以后记起来了就另开一篇说说。弄好了之后顺便去买了个域名，配置了一下CNAME什么的。然后配置了一下emacs，稍微学了学emacs lisp，也写了一个<a href="https://github.com/mad4alcohol/mfa-elisp-lib">小插件</a>练练手。最开始是打算专门写博客用的，但是后来也还是配置了一下<a href="clojure-mode">clojure-mode</a>，顺带着也弄了一下<a href="https://github.com/technomancy/leiningen">Leiningen</a>（另，这货在arch下面还挺难装的，最后还是在emacs里不知不觉自己就弄好了）。配置emacs的东西都在前两篇文章里。</p>
+
+<h3>最后</h3>
+
+<p>是写了一个<a href="https://github.com/mad4alcohol/LaborHourInputter">工票录入系统</a>，目的是加快工票的输入（原来是直接在写好的excel表格里输入工时之类的数据），所以根据用户需求，用才熟悉起来的pyqt弄了一个专门输入工票的界面。一直到现在都很简单，一天完事。这之后用户又有需求了：写出到excel之前，要用现在已有的数据算出工人的绩效，然后再跟工时废品之类的数据一起写到给定的excel的sheet里。这个工作，根据跨平台的原则，当然是首先考虑pypi里的可以跨平台的东西，所以看起来是可以用<a href="http://sourceforge.net/projects/pyexcelerator/">pyExcelerator</a>或者<a href="http://pypi.python.org/pypi/xlutils">xlutils</a>这种东西来弄的，但是经过实践</p>
+
+<blockquote><ul>
+<li>用pyExcelerator写入的话，所有格子的style消失，所有公式消失，基本可以说废掉了</li>
+<li>用xlutils的话，压根就写入不了（可能是操作有误吧）</li>
+</ul>
+</blockquote>
+
+<p>最后只能去试试用<a href="http://sourceforge.net/projects/pywin32/">pywin32</a>的win32com模块了，随便去搜了搜，看起来好像很复杂，但是仔细看了一下某个邮件列表的某个邮件存档（链接已经忘了），发现用COM去操作excel还是挺简单的，直接定位之后给<code>Value</code>属性赋值就行了，然后设置style就是直接给<code>Style</code>属性赋值，比如<code>cell.Style = 'Percent'</code>（如果设置<code>xl_app.Visible = True</code>会有很有意思的事情发生）。摸清楚之后，剩下工作的工期缩短了500%（预期是十几天断断续续地弄）。收获也还是有的，熟悉了一下数据库之类的东西，但是因为用的是<a href="http://www.sqlalchemy.org/">SQLAlchemy</a>，所以很不熟悉底层的操作（比如sql语句什么的），这也导致数据库那块的效率略低，然后稍微用了一下 <a href="http://pypi.python.org/pypi/xlrd">xlrd</a>去读存在表格里的工人信息，然后实践了一下抽象类之类的东西，目前感觉继承还是只是一种消除重复的机制，并没有那么神奇或者不可捉摸。反正目前我发现的办法就是，先写两个需要用的类出来（没有两个以及以上类似的类就暂时不需要抽象类对吧？），然后<em>并排打开</em>，从<strong>字面上</strong>提取出重复，放到一个抽象类里去，然后去掉这两个类的重复部分。</p>
+
+<p>另外考虑到用户的<em>非</em>专业人员的属性，为每个项目入口点（比如输入界面和输出到表格）做了一个batch文件（给安装也做了一个脚本，静默安装python，安装distribute库，安装pip，安装xlrd和sqlalchemy，最后是安装pyqt和pywin32，基本上是全自动，除了最后两个需要手动点几下Next，因为实在是没找到可以用的静默参数是啥）。</p>
+]]></content:encoded>
+    </item>
+    
+    <item>
+      <title>Emacs总结（续）之YASnippet</title>
+      <link href="http://mad4alcohol.github.com/2012/08/02/emacs-summary-cont/"/>
+      <pubDate>2012-08-02T00:00:00+08:00</pubDate>
+      <author>陈傻鸡</author>
+      <guid>http://mad4alcohol.github.com/2012/08/02/emacs-summary-cont</guid>
+      <content:encoded><![CDATA[<p>这里我不建议用pac-ins装它，因为无论怎么按照网上给出的方法配置，重启之后都没有YASnippet这个菜单出现。我推荐的安装方法是去<a href="https://github.com/capitaomorte/yasnippet">YASnippet的主页</a>，按照README里的第一种方法安装，重启后成功出现了YASnippet菜单。</p>
+
+<p>YASnippet的配置是非常简单的，只需要在<code>.emacs</code>中加入</p>
+
+<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nv">add-to-list</span> <span class="ss">&#39;load-path</span>
+<span class="lineno">2</span>              <span class="s">&quot;your path to yasnippet&quot;</span><span class="p">)</span>
+<span class="lineno">3</span> <span class="p">(</span><span class="nb">require</span> <span class="ss">&#39;yasnippet</span><span class="p">)</span>
+<span class="lineno">4</span> <span class="p">(</span><span class="nv">yas/global-mode</span> <span class="mi">1</span><span class="p">)</span>
+</code></pre></div>
+
+
+<p>要说的一点是展开模板的快捷键Tab的设置，在主模式markdown-mode下，Tab被绑定到markdown-cycle，而辅模式yas-minor-mode下，Tab是yas/expand，被markdown-cycle覆盖了。这样非常不方便。解决的办法有两种：</p>
+
+<ul>
+<li>取消markdown-mode对tab的占用，代码出处： <a href="http://calas.github.com/2009/11/20/using-yasnippets-in-markdown-mode.html">这篇博客</a></li>
+</ul>
+
+
+<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nb">defun</span> <span class="nv">markdown-unset-tab</span> <span class="p">()</span>
+<span class="lineno">2</span>   <span class="p">(</span><span class="nv">define-key</span> <span class="nv">markdown-mode-map</span> <span class="p">(</span><span class="nv">kbd</span> <span class="s">&quot;&lt;tab&gt;&quot;</span><span class="p">)</span> <span class="no">nil</span><span class="p">))</span>
+<span class="lineno">3</span> <span class="p">(</span><span class="nv">add-hook</span> <span class="ss">&#39;markdown-mode-hook</span> <span class="ss">&#39;markdown-unset-tab</span><span class="p">)</span>
+</code></pre></div>
+
+
+<ul>
+<li>将yas/expand绑定到其他快捷键上</li>
+</ul>
+
+
+<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nv">global-set-key</span> <span class="p">(</span><span class="nv">kbd</span> <span class="s">&quot;C-;&quot;</span><span class="p">)</span> <span class="ss">&#39;yas/expand</span><span class="p">)</span>
+</code></pre></div>
+
+
+<p>考虑到markdown里用tab的次数还是挺多的，我采用的是第二种方法。</p>
+
+<p>再说下YASnippet的自定义模板吧，这么方便的工具不会自定义真是太浪费了。
+我们从实例来说明。</p>
+
+<h3>第一个例子：post的meta信息模板</h3>
+
+<p>大家知道，jekyll的post是由markdown编译而来的，而这些markdown文件（即post源文件）必须有一些可以为jekyll所用的meta信息（比如title，category之类的）才能被识别为一篇博客。本着<a href="http://en.wikipedia.org/wiki/Don't_repeat_yourself">DRY原则</a>（是的，代码里的原则不光码代码的时候很受用，从字面上看，干别的事也是），现将这些meta信息做成一个snippet。</p>
+
+<p>使用命令<code>M-x yas/new-snippet</code>来进入新建snippet的buffer，可以看到以下的内容</p>
+
+<pre><code># -*- mode: snippet -*-
+# name:
+# key: 
+# binding: direct-keybinding
+# expand-env: ((some-var some-value))
+# type: command
+# --
+</code></pre>
+
+<p>其中</p>
+
+<ul>
+<li><code>name</code>是在YASnippet中显示的名字</li>
+<li><code>key</code>是触发这个snippet所用的关键字</li>
+<li><code>binding</code>和<code>expand-env</code>是两个高级特性，这里不做说明</li>
+</ul>
+
+
+<p>接下来，将上面的信息改为（不需要的行可以删掉）</p>
+
+<pre><code># name: post-meta
+# key: pm
+</code></pre>
+
+<p>值得注意的是，这个new snippet的buffer的初始内容就是YASnippet的一个snippet，按tab可以自动跳到下一个要填内容的地方。</p>
+
+<p>接着在<code># --</code>后面一行按照要求的格式写下我们需要的meta信息</p>
+
+<pre><code>---
+layout: post
+title: "${1:Title}"
+description: ""
+category: $2
+tags:[$3]
+---
+{% include JB/setup %}
+$0
+</code></pre>
+
+<p>这其中形如${N:Some Text}的内容被称为字段，N是tab stop序号（顺序是从$1到$N的），冒号后面的文字（如Title）则是其中的默认值。最后$0被称为YASnippet的退出点，即一个key被展开为snippet，并按顺序走完所有tab stop之后光标停留的点。</p>
+
+<p>现在这个snippet就写好了。别忘了<em>保存</em>！如果你是按照github上的安装方法安装的，可以用<code>C-x C-s ~/.emacs.d/plugins/yasnippet/snippets/markdown/post-meta</code>把这个snippet保存在YASnippet的markdown分类下。</p>
+
+<p>重启之后，新建一个md文件，emacs会自动进入markdown-mode和yas-minor-mode以及其他的一些minor-mode，这时你可以在空白处输入<code>pm</code>，然后用命令<code>M-x yas/expand</code>或者用它的快捷键（我的是<code>C-;</code>），就可以看到pm被扩展成了上面那几句，如图</p>
+
+<p><img src="/assets/images/emacs-summary-cont/post-meta-screenshot.png" alt="post-meta-screenshot.png" /></p>
+
+<p>如果不能展开，那么就要注意一下展开时你的光标的位置：光标不能处于key上，只能在你正常打完key的时候光标的那个位置（即key的最后一个字母之后）。同时key也有要求，除了空白符（空格，tab等）周围不能有其他字符。</p>
+
+<p>然后就可以按tab，依次输入信息了。</p>
+
+<h3>第二个例子：高亮代码tag模板</h3>
+
+<p>用jekyll写博客时，插入代码片段要用到liquid的tag（准确地说是jekyll给liquid写的扩展tag）如下</p>
+
+<pre><code>{% highlight lang linenos %}
+{% endhighlight %}
+</code></pre>
+
+<p>这里的<code>lang</code>是一个语言的缩写形式，比如Common Lisp是<code>cl</code>，Python是<code>python</code>（其他语言的名字可以查 <a href="http://pygments.org/docs/lexers">Pygments的Lexer页面</a> ）。本着DRY原则，应该将这些重复性的操作给抽取出来。</p>
+
+<p>跟上一个例子的操作一样，进入new snippet的buffer，其中</p>
+
+<ul>
+<li><code>name</code>设为<code>highlight</code></li>
+<li><code>key</code>设为<code>hl</code></li>
+</ul>
+
+
+<p>其他的meta可以删掉，snippet正文如下</p>
+
+<pre><code>{% highlight ${1:cl} linenos %}
+$0
+{% endhighlight %}
+</code></pre>
+
+<p>保存并重启之后，在markdown-mode下就可以把<code>hl</code>展开为上面那一段了，基本消灭了重复操作。</p>
+
+<h3>最后一个例子，也是最复杂的一个，但是也是最好玩的一个</h3>
+
+<p>markdown中的img标签语法为</p>
+
+<pre><code>![ALT TEXT](URL)
+</code></pre>
+
+<p>很明显这个语法可以做成如下的snippet</p>
+
+<pre><code>![${1:ALT TEXT}](${2:URL }) $0
+</code></pre>
+
+<p>但是这还不够。还可以更简单。</p>
+
+<p>在开始之前，我想说一下这个博客的文件布局（同时也是jekyll blog的默认布局）</p>
+
+<pre><code>root
+  | --- _posts
+  |       | --- 2012-07-31-hello-world-again.md
+  |       | --- 2012-08-01-emacs-summary.md
+  |       | --- 2012-08-02-emacs-summary-cont.md
+  |
+  | --- assets
+  |       | --- images
+  |       |       | --- emacs-summary
+  |       |       |       | --- emacs-screenshot.png
+  |       |       |
+  |       |       | --- emacs-summary-cont
+  |       |       |       | --- post-meta-screenshot.png
+</code></pre>
+
+<p>可以看到，图片可以用<code>/assets/images/post-name/xxx.extension</code>来访问（<code>post-name</code>是文章的名字，比如这篇博客的是<code>emacs-summary-cont</code>）。</p>
+
+<p>观察了一下路径，发现<code>/assets/images/</code>是确定的，而实际上<code>post-name/</code>也是确定的，因为它实际上是文章源代码的路径去掉多余的修饰值（日期，扩展名）后的值，也就是这个post的实际名称，而且在emacs里编辑的时候，就已经知道路径了。然后<code>xxx.extension</code>原本是要手填的，但是可以用YASnippet的<code>yas/choose-value</code>特性把<code>/assets/images/post-name/</code>里是图片的文件名列出来，由我们来选择一个填入（为什么这样是可行的，因为我的习惯是先放图进去再接着写）。还剩一个要填的Alt Text，就把图片文件名填到Alt Text里去好了。这么一看，我们的录入量从<strong>整个的路径</strong>减少到了<strong>只用上下键选择</strong>的程度。<strong>这正是emacs的魅力所在</strong>。</p>
+
+<p>为什么上面的设想是可行的？因为YASnippet支持在snippet中<em>嵌入elisp</em>代码！</p>
+
+<p>整理一下已知量：</p>
+
+<ul>
+<li>post的绝对路径，通过 <a href="http://www.gnu.org/software/emacs/manual/elisp.html">GNU Emacs Lisp Reference Manual</a> 的相关章节可以知道函数<code>buffer-file-name</code>返回形如<code>d:/workspace/2012-08-02-emacs-summary-cont.md</code>的绝对路径</li>
+<li>url的前缀，即<code>/assets/images/post-name/</code></li>
+<li>Alt Text，即图片url里的文件名（这里只是知道了Alt Text与文件名相同，实际上在这个时候文件名是不知道的）</li>
+</ul>
+
+
+<p>整理一下要求的量：</p>
+
+<ul>
+<li>post的实际名称，如这篇文章的实际名称为<code>emacs-summary-cont</code></li>
+<li><code>/assets/images/post-name/</code>里的图片文件的列表</li>
+</ul>
+
+
+<p>接下来求解第一个问题，求一个post的实际名称。</p>
+
+<p>首先把路径去掉，扩展名去掉，通过manual可以查得有两个函数可以用，于是代码如下</p>
+
+<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nb">defun</span> <span class="nv">mfa/extract-file-name</span> <span class="p">(</span><span class="nv">file-name</span><span class="p">)</span>
+<span class="lineno">2</span>   <span class="p">(</span><span class="nv">file-name-nondirectory</span> <span class="p">(</span><span class="nv">file-name-sans-extension</span> <span class="nv">file-name</span><span class="p">)))</span>
+</code></pre></div>
+
+
+<p>然后可以发现实际名称是把上一步得到的值，用<code>-</code>打散之后，去掉前3个，再用<code>-</code>合起来，手册可以查到有<code>concat</code>、<code>split-string</code>和<code>cdddr</code>（<code>cdr</code>的变形），但是没有查到类似python里的<code>join</code>的函数，只能自己写了</p>
+
+<div class="highlight"><pre><code class="cl"><span class="lineno"> 1</span> <span class="p">(</span><span class="nb">defun</span> <span class="nv">mfa/join</span> <span class="p">(</span><span class="nv">l</span> <span class="nv">separator</span><span class="p">)</span>
+<span class="lineno"> 2</span>   <span class="p">(</span><span class="nb">apply</span> <span class="ss">&#39;concat</span>
+<span class="lineno"> 3</span>          <span class="p">(</span><span class="nb">car</span> <span class="nv">l</span><span class="p">)</span>
+<span class="lineno"> 4</span>          <span class="p">(</span><span class="nb">mapcar</span> <span class="nf">#&#39;</span><span class="p">(</span><span class="k">lambda</span> <span class="p">(</span><span class="nv">str</span><span class="p">)</span> <span class="p">(</span><span class="nv">concat</span> <span class="nv">separator</span> <span class="nv">str</span><span class="p">))</span>
+<span class="lineno"> 5</span>                  <span class="p">(</span><span class="nb">cdr</span> <span class="nv">l</span><span class="p">))))</span>
+<span class="lineno"> 6</span> 
+<span class="lineno"> 7</span> <span class="p">(</span><span class="nb">defun</span> <span class="nv">mfa/remove-date</span> <span class="p">(</span><span class="nv">file-name</span><span class="p">)</span>
+<span class="lineno"> 8</span>   <span class="p">(</span><span class="nv">mfa/join</span> <span class="p">(</span><span class="nb">cdddr</span> <span class="p">(</span><span class="nv">split-string</span> <span class="nv">file-name</span> <span class="s">&quot;-&quot;</span><span class="p">))</span>
+<span class="lineno"> 9</span>             <span class="s">&quot;-&quot;</span><span class="p">))</span>
+<span class="lineno">10</span> 
+<span class="lineno">11</span> <span class="p">(</span><span class="nb">defun</span> <span class="nv">mfa/get-directory-from-bufname</span> <span class="p">(</span><span class="nv">file-name</span><span class="p">)</span>
+<span class="lineno">12</span>   <span class="p">(</span><span class="nv">mfa/remove-date</span> <span class="p">(</span><span class="nv">mfa/extract-file-name</span> <span class="nv">file-name</span><span class="p">)))</span>
+</code></pre></div>
+
+
+<p>稍微解释一下<code>mfa/join</code>（如果你懂一些lisp，以下内容可以跳过）：</p>
+
+<ul>
+<li>首先把参数之一的列表l分成两份，l1表示<code>(car l)</code>，即l的第一个元素，lr（l-rest）表示<code>(cdr l)</code>，即去掉了l的头元素的剩下的列表。</li>
+<li>然后对lr做运算：每个元素的前面都加一个separator，例如若lr是<code>'("a" "b" "c")</code>，经过运算之后就是<code>'("-a" "-b" "-c")</code>了。这个运算用<code>mapcar</code>函数来实现，<code>mapcar</code>接受两个参数：一个函数，一个列表；<code>mapcar</code>把这个函数按顺序应用到这个列表的每一个元素上，并且把每一个函数应用的返回值按顺序收集起来，做成一个新列表，<code>mapcar</code>的运算结果就是这个新列表。</li>
+<li>把l1和lr拼起来。</li>
+<li>如果还是有问题可以用<code>M-x ielm</code>命令打开elisp的repl，自己去试验一下。</li>
+</ul>
+
+
+<p>（事后突然发现其实没必要那么麻烦。因为日期是固定长度的<code>xxxx-xx-xx</code>，可以直接去掉<code>file-name</code>的前11个字符（比日期多加了一个杠，所以是11个））</p>
+
+<p>接下来求图像文件列表</p>
+
+<p>要求一个文件列表，首先得知道文件的目录在哪，如果用绝对路径，这个目录是很好知道的，但是如果要保证跨平台性，只能使用相对路径，手册里查到一个函数<code>expand-file-name</code>可以完成相对路径展开到绝对路径的工作，
+然后可以发现从我当前的编辑目录<code>./_posts</code>到<code>./assets</code>需要向上走一级目录，所求的目录用elisp表达出来即</p>
+
+<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nb">defun</span> <span class="nv">mfa/get-images-directory</span> <span class="p">(</span><span class="nv">file-name</span><span class="p">)</span>
+<span class="lineno">2</span>   <span class="p">(</span><span class="nv">concat</span> <span class="p">(</span><span class="nv">file-name-as-directory</span> <span class="p">(</span><span class="nv">expand-file-name</span> <span class="s">&quot;&quot;</span> <span class="s">&quot;../assets/images/&quot;</span><span class="p">))</span>
+<span class="lineno">3</span>           <span class="p">(</span><span class="nv">mfa/get-directory-from-bufname</span> <span class="nv">file-name</span><span class="p">)))</span>
+</code></pre></div>
+
+
+<p>如果调用<code>(mfa/get-images-directory (buffer-file-name))</code>在我的电脑上可得返回值为<code>d:/workspace/blog-content/assets/images/emacs-summary-cont</code></p>
+
+<p>接下来就可以用<code>directory-files</code>求得某个目录下的文件列表了，而且<code>directory-files</code>有个参数<code>:match-regexp</code>用来guard文件名。注意：这个函数返回的文件列表里的元素是绝对路径的，而我们只需要文件名，所以需要用<code>mapcar</code>处理一下，代码如下</p>
+
+<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nb">defun</span> <span class="nv">mfa/list-image-files</span> <span class="p">(</span><span class="nb">directory</span><span class="p">)</span>
+<span class="lineno">2</span>   <span class="p">(</span><span class="nb">mapcar</span> <span class="ss">&#39;file-name-nondirectory</span>
+<span class="lineno">3</span>           <span class="p">(</span><span class="nv">directory-files</span> <span class="nb">directory</span>
+<span class="lineno">4</span>                            <span class="ss">:match-regexp</span> <span class="s">&quot;\\.\\(png\\|jpg\\|jpeg\\|gif\\)&quot;</span><span class="p">)))</span>
+</code></pre></div>
+
+
+<p>Emacs Lisp用的正则表达式的语法是posix风格的（与vim一样），熟悉perl风格的同学们可能会觉得很奇怪（比如括号要转义了才有分组的作用）。</p>
+
+<p>最后一步，弄一个函数把上面的函数拼起来，首先在脑袋里想好输入输出：输入是一个带绝对路径的文件名，输出是这个文件名对应的图片文件夹下的图片文件名列表。</p>
+
+<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nb">defun</span> <span class="nv">mfa/yield-choices</span> <span class="p">(</span><span class="nv">file-name</span><span class="p">)</span>
+<span class="lineno">2</span>   <span class="p">(</span><span class="nv">mfa/list-image-files</span> <span class="p">(</span><span class="nv">mfa/get-images-directory</span> <span class="nv">file-name</span><span class="p">)))</span>
+</code></pre></div>
+
+
+<p>这样一来，我们所有的elisp编码工作就完成了（可以看出来所有代码都是由函数拼起来的，这也是<a href="http://en.wikipedia.org/wiki/Functional_programming">函数式编程</a>的主要编码方式），可以把以上代码存入一个elisp文件中（注意，最后一行要写<code>(provide 'your-file-name)</code>），并在<code>.emacs</code>里配置一下，把这个文件像插件一样加载进来。</p>
+
+<p>接下来，我们开始snippet的编码，这部分就相对来说容易很多了</p>
+
+<pre><code>![${1:$$(yas/choose-value (mfa/yield-choices (buffer-file-name)))}](/assets/images/`(mfa/get-directory-from-bufname (buffer-file-name))`/$1)$0
+</code></pre>
+
+<p><em>注意</em>：里面是一行，不能折行。</p>
+
+<p>这里主要用到了三个特性：<code>yas/choose-value</code>，内嵌elisp和镜像。</p>
+
+<ul>
+<li>在扩展形如<code>${N:$$(yas/choose-value your-list)}</code>的snippet的时候，可以显示一个下拉菜单来选择要填入的内容；</li>
+<li>可以在snippet的任意地方嵌入用<em>反引号</em>括起来的elisp代码；</li>
+<li>在前面定义的tab stop，如果在后面有对它的引用，则会直接copy到后面的引用处，在上面的snippet里，前面作为Alt Text的文件名被镜像到后面的路径里去了。</li>
+</ul>
+
+
+<p>这样一来，我们所有的编码工作就完成了，将这个snippet保存至上面的markdown的snippet目录下，重启emacs之后就可以看效果了。</p>
+
+<p>附效果截图一张：</p>
+
+<p><img src="/assets/images/emacs-summary-cont/snippet-screenshot.png" alt="snippet-screenshot.png" /></p>
+
+<p>这样就基本介绍了YASnippet的配置和自定义snippet（中间还穿插了一点elisp）。</p>
+
+<h3>后记</h3>
+
+<p>要知道YASnippet这个插件自身就是elisp写的，emacs的超高可配置性可见一斑，无怪乎说 <a href="http://c2.com/cgi/wiki?EmacsAsOperatingSystem"><strong>emacs就是一个操作系统</strong></a>了。</p>
+
+<p>就我个人来看，虽然vim的编辑效率可以爆emacs几条街（我之前可以算是个坚定的vim党，额，可能没那么坚定，我更喜欢在ide里用vim插件，而不是直接用gvim），但是如果emacs加上扩展再去和vim比（哪怕vim也加扩展），那真是不好说了。</p>
+
+<p>我开始体会到emacs的强大，也是自己摸索出来上面那个图片文件列表snippet之后了，而elisp正是emacs强大的根源所在。elisp开发（或者说lisp类的语言的开发）的过程也是非常愉悦的过程，你在主buffer里写着代码，写了两个函数，想试一下效果，可以直接eval一下buffer，然后在旁边的repl里立即进行测试，基本上等于<em>所写即所得编程</em>（好像是废话，但是你懂我说的），我想目前还没有别的语言能这么做，对于我这个不会单元测试（也不喜欢，如果是好lisp代码的话，应该是不需要单元测试的，因为本身就完全是<a href="http://en.wikipedia.org/wiki/Declarative_programming">声明式</a>的，要干什么一目了然）的人来说，真是救星一般的东西。另：elisp的文档也写得非常好，朴素且实用，就像emacs自己。</p>
+
+<p>如果想进一步了解lisp这种<strong>神奇</strong>的东西，可以看看 <a href="http://book.douban.com/subject/6021440/">黑客与画家</a>。Paul Graham写的很精彩，但是我觉得略微有点太夸大lisp了（虽然lisp确实很强大） :)</p>
+]]></content:encoded>
+    </item>
+    
+    <item>
+      <title>折腾了一天的emacs，现在来写点总结</title>
+      <link href="http://mad4alcohol.github.com/2012/07/31/emacs-summary/"/>
+      <pubDate>2012-07-31T00:00:00+08:00</pubDate>
+      <author>陈傻鸡</author>
+      <guid>http://mad4alcohol.github.com/2012/07/31/emacs-summary</guid>
+      <content:encoded><![CDATA[<p>今天一起床，突然心血来潮，想配个emacs来玩玩。一来增加点见识，一个<em>编辑器</em>到底能做到什么水平；二来，如果真配好了，以后用起来也应该会很方便；再来，我本来就对lisp类的语言很感兴趣（其实只要不是命令式的都感兴趣，嘛，满大街都是imperative的，这不科学），而且最开始是想作为clojure的ide来弄的，配配emacs也算是增进对lisp的了解吧。</p>
+
+<h3>准备工作</h3>
+
+<ul>
+<li>过一遍emacs自带的tutorial，了解一下基本操作，后面的配置也就可以作为实际的练习了。另：有中文的，所以应该不是什么大问题，无奈的是emacs在windows下默认的字体渲染得很丑（ps: 这是可以解决的，详见后文）。</li>
+<li>了解lisp的基本知识，比如这种<em>奇怪</em>的语法（<a href="http://en.wikipedia.org/wiki/S-expression">S-expression</a>）是怎么回事，最开始可能不习惯，但是习惯之后，你就会明白这种语法的表达力有多强大（通过宏来体现出数据即代码，代码即数据）。</li>
+</ul>
+
+
+<p>接下来，开始<em>一块一块</em>地来看<code>.emacs</code>（即vim里的<code>.vimrc</code>）。</p>
+
+<h3>哦，对了，首先要说的是.emacs放哪。</h3>
+
+<p>*nix就不说了，大家都知道。但是windows的情况就要复杂点了。
+我先是稍微在网上搜了一下，说在<code>C:/Users/xxx/AppData/Roaming/.emacs.d</code>里建一个<code>init.el</code>。我试了，不行。（怎么试？就加一句<code>(tool-bar-mode -1)</code>，然后重启emacs看看有变化没。）百撕不得骑姐（大误）之后，还是打算换个关键字，用英语搜吧。果然搜到了一个关于windows的<a href="http://www.gnu.org/software/emacs/windows/Installing-Emacs.html#index-HOME-directory-49">faq</a>，里面的3.5节对确定主文件夹的机制讲得很清楚：</p>
+
+<blockquote><ol>
+<li>如果设置了<code>HOME</code>环境变量，那么就用<code>HOME</code>指代的文件夹。</li>
+<li>如果注册表有<code>HKCU\SOFTWARE\GNU\Emacs\HOME</code>这一项，那么就用它指代的文件夹。</li>
+<li>如果注册表有<code>HKLM\SOFTWARE\GNU\Emacs\HOME</code>这一项，那么就用它指代的文件夹。不推荐，因为它会让多个用户共享同一个主文件夹。</li>
+<li>如果存在<code>C:\.emacs</code>，那么就用<code>C:/</code>。这么做是为了向前兼容，因为如果没有设置<code>HOME</code>，以前的版本会默认将其设置为<code>C:/</code>。</li>
+<li>使用当前用户的<code>AppData</code>文件夹，通常是在当前用户的profile文件夹里一个叫做<code>Application Data</code>的文件夹，其路径根据Windows版本和计算机是否是域上的一部分而不同。</li>
+</ol>
+</blockquote>
+
+<p>后面还有一句</p>
+
+<blockquote><p>在Emacs中，一个文件名开头处的&lt;~>会被展开为你的主文件夹，所以你总是可以用<code>C-x C-f ~/.emacs</code>找到你的<code>.emacs</code>文件。</p></blockquote>
+
+<p>我是直接用的第一个方法弄的，果然好使（还是官方文档靠谱啊）。</p>
+
+<h3>外观部分</h3>
+
+<p>首先得设置好语言环境（应该就是总编码的意思），
+用以下代码设置</p>
+
+<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nv">set-language-environment</span> <span class="ss">&#39;utf-8</span><span class="p">)</span>
+</code></pre></div>
+
+
+<p>其中<code>'utf-8</code>表示的是一个引用（quote），表示一个唯一确定的标识，跟java里的枚举类型有点类似。</p>
+
+<p>然后设置汉字的渲染，
+我在google上搜过，得到的结论是强制设定一个字体应该能解决问题，在<a href="http://emacser.com/torture-emacs.htm">这篇文章</a>里copy了一段代码</p>
+
+<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nb">dolist</span> <span class="p">(</span><span class="nv">charset</span> <span class="o">&#39;</span><span class="p">(</span><span class="nv">kana</span> <span class="nv">han</span> <span class="nc">symbol</span> <span class="nv">cjk-misc</span> <span class="nv">bopomofo</span><span class="p">))</span>
+<span class="lineno">2</span>   <span class="p">(</span><span class="nv">set-fontset-font</span> <span class="p">(</span><span class="nv">frame-parameter</span> <span class="no">nil</span> <span class="ss">&#39;font</span><span class="p">)</span>
+<span class="lineno">3</span>                   <span class="nv">charset</span>
+<span class="lineno">4</span>                   <span class="p">(</span><span class="nv">font-spec</span> <span class="ss">:family</span> <span class="s">&quot;微软雅黑&quot;</span> <span class="ss">:size</span> <span class="mi">12</span><span class="p">)))</span>
+</code></pre></div>
+
+
+<p>eval之后，渲染果然好多了，但是保存<code>.emacs</code>之后，新开一个emacs，又变回以前那种渲染了，经过又一次的百思不得其解之后，还是去翻文档，试着把<code>set-fontset-font</code>的第一个参数，即<code>(frame-parameter nil 'font)</code>，改成<code>"fontset-default"</code>，保存，重启，ok了。
+然后设置英文字体，把其中的<code>Bitstream Vera Sans Mono</code>换成你想要的字体名就行了，比如<code>Consolas</code></p>
+
+<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nv">set-face-attribute</span> <span class="ss">&#39;default</span> <span class="no">nil</span> <span class="ss">:font</span> <span class="s">&quot;Bitstream Vera Sans Mono-10&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+
+<p>ps: 在这里强烈推荐一下<a href="http://ftp.gnome.org/pub/GNOME/sources/ttf-bitstream-vera/1.10/">Bitstream Vera Sans Mono</a>，非常耐看的字体，再配上mactype的渲染简直完美（*nix个发行版的桌面一般自带比windows好看的多的渲染，mac就更不用说了）;)。</p>
+
+<p>接下来把那个烦人的工具栏去掉</p>
+
+<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">fboundp</span> <span class="ss">&#39;tool-bar-mode</span><span class="p">)</span>
+<span class="lineno">2</span>   <span class="p">(</span><span class="nv">tool-bar-mode</span> <span class="mi">-1</span><span class="p">))</span>
+</code></pre></div>
+
+
+<p>其中在设置之前检测一下应该是为了兼容<code>nw</code>模式（因为既然在控制台下，工具栏什么的肯定是没有的吧）。如果你也不喜欢菜单栏，可以照葫芦画瓢，设置<code>menu-bar-mode</code>为<code>-1</code>。</p>
+
+<p>然后把总是在响的bell给关掉</p>
+
+<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="k">setq</span> <span class="nv">visible-bell</span> <span class="no">t</span><span class="p">)</span>
+</code></pre></div>
+
+
+<p>值得一提的是<code>setq</code>（set quoted）与<code>set</code>的区别，基本可以理解为以下两个表达式等价</p>
+
+<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="k">setq</span> <span class="nv">some-variable</span> <span class="no">t</span><span class="p">)</span>
+<span class="lineno">2</span> <span class="p">(</span><span class="nb">set</span> <span class="ss">&#39;some-variable</span> <span class="no">t</span><span class="p">)</span>
+</code></pre></div>
+
+
+<p>然后设置主题，
+我试过用<code>M-x package-install</code>装color-theme，也试过直接从color-theme的官网上下zip，在emacs24下都有问题：<code>Symbol's function definition is void: plist-to-alist</code>，去源码里一看，调用<code>plist-to-alist</code>的那句后面写着<code>XEmacs only</code>-_-|，试过把这句注释，或者加个<code>plist-to-alist</code>的假实现，都不行。最后看了一个stackoverflow的回答说emacs24自带了主题管理（好像以前的版本也有？），先在buffer里用<code>M-x customize-themes</code>看所有的主题，选一个，然后在<code>.emacs</code>里加入</p>
+
+<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nv">load-theme</span> <span class="ss">&#39;wheatgrass</span> <span class="no">t</span><span class="p">)</span>
+</code></pre></div>
+
+
+<p>外观这部分最后要说的是两个插件：tabbar和lineno
+但是在说tabbar的配置之前，要说一下emacs的package管理器的配置</p>
+
+<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nb">require</span> <span class="ss">&#39;package</span><span class="p">)</span>
+<span class="lineno">2</span> <span class="p">(</span><span class="nv">add-to-list</span> <span class="ss">&#39;package-archives</span>
+<span class="lineno">3</span>            <span class="o">&#39;</span><span class="p">(</span><span class="s">&quot;marmalade&quot;</span> <span class="o">.</span> <span class="s">&quot;http://marmalade-repo.org/packages/&quot;</span><span class="p">))</span>
+<span class="lineno">4</span> <span class="p">(</span><span class="nv">package-initialize</span><span class="p">)</span>
+</code></pre></div>
+
+
+<p>具体来说就是将"marmalade"和这个repo的url作为一个cons存进<code>package-archives</code>里。
+以后要安装什么插件，一般可以直接用命令<code>M-x package-install xxx</code>（以下简称pac-ins）安装。</p>
+
+<p>首先用pac-ins安装lineno，然后在<code>(package-initialize)</code>后面加入</p>
+
+<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nv">linum-mode</span> <span class="no">t</span><span class="p">)</span>
+</code></pre></div>
+
+
+<p>注意，所有跟用pac-ins安装的插件有关的代码都只能写在<code>(package-initialize)</code>后面，否则会提示找不到变量之类的错误。</p>
+
+<p>然后安装tabbar，并加入以下代码</p>
+
+<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nb">require</span> <span class="ss">&#39;tabbar</span><span class="p">)</span>
+<span class="lineno">2</span> <span class="p">(</span><span class="nv">tabbar-mode</span> <span class="no">t</span><span class="p">)</span>
+</code></pre></div>
+
+
+<p>重启之后就可以看到buffer上面都多了一行tab。</p>
+
+<p>为了更加方便地使用tabbar，可以绑定两个快捷键到tabbar-xward上，比如</p>
+
+<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nv">global-set-key</span> <span class="p">(</span><span class="nv">kbd</span> <span class="s">&quot;M-j&quot;</span><span class="p">)</span> <span class="ss">&#39;tabbar-backward</span><span class="p">)</span>
+<span class="lineno">2</span> <span class="p">(</span><span class="nv">global-set-key</span> <span class="p">(</span><span class="nv">kbd</span> <span class="s">&quot;M-k&quot;</span><span class="p">)</span> <span class="ss">&#39;tabbar-forward</span><span class="p">)</span>
+</code></pre></div>
+
+
+<p>另外，如果你觉得默认的样式很丑，可以用下面的代码来自定义，修改自<a href="http://blog.csdn.net/CherylNatsu/article/details/6204737">这篇文章</a>。</p>
+
+<div class="highlight"><pre><code class="cl"><span class="lineno"> 1</span> <span class="p">(</span><span class="nv">set-face-attribute</span> <span class="ss">&#39;tabbar-default</span> <span class="no">nil</span>
+<span class="lineno"> 2</span>          <span class="ss">:background</span> <span class="s">&quot;gray80&quot;</span>
+<span class="lineno"> 3</span>          <span class="ss">:family</span> <span class="s">&quot;Bitstream Vera Sans Mono&quot;</span>
+<span class="lineno"> 4</span>          <span class="ss">:foreground</span> <span class="s">&quot;gray30&quot;</span>
+<span class="lineno"> 5</span>          <span class="ss">:height</span> <span class="mf">0.75</span><span class="p">)</span>
+<span class="lineno"> 6</span> <span class="p">(</span><span class="nv">set-face-attribute</span> <span class="ss">&#39;tabbar-unselected</span> <span class="no">nil</span>
+<span class="lineno"> 7</span>          <span class="ss">:inherit</span> <span class="ss">&#39;tabbar-default</span>
+<span class="lineno"> 8</span>          <span class="ss">:background</span> <span class="s">&quot;gray85&quot;</span>
+<span class="lineno"> 9</span>          <span class="ss">:foreground</span> <span class="s">&quot;gray30&quot;</span>
+<span class="lineno">10</span>          <span class="ss">:box</span> <span class="no">nil</span><span class="p">)</span>
+<span class="lineno">11</span> <span class="p">(</span><span class="nv">set-face-attribute</span> <span class="ss">&#39;tabbar-selected</span> <span class="no">nil</span>
+<span class="lineno">12</span>          <span class="ss">:inherit</span> <span class="ss">&#39;tabbar-default</span>
+<span class="lineno">13</span>          <span class="ss">:background</span> <span class="s">&quot;#f2f2f6&quot;</span>
+<span class="lineno">14</span>          <span class="ss">:foreground</span> <span class="s">&quot;black&quot;</span>
+<span class="lineno">15</span>          <span class="ss">:box</span> <span class="no">nil</span><span class="p">)</span>
+<span class="lineno">16</span> <span class="p">(</span><span class="nv">set-face-attribute</span> <span class="ss">&#39;tabbar-button</span> <span class="no">nil</span>
+<span class="lineno">17</span>          <span class="ss">:inherit</span> <span class="ss">&#39;tabbar-default</span>
+<span class="lineno">18</span>          <span class="ss">:box</span> <span class="o">&#39;</span><span class="p">(</span><span class="ss">:line-width</span> <span class="mi">1</span>
+<span class="lineno">19</span>             <span class="ss">:color</span> <span class="s">&quot;gray72&quot;</span>
+<span class="lineno">20</span>             <span class="ss">:style</span> <span class="nv">released-button</span><span class="p">))</span>
+<span class="lineno">21</span> <span class="p">(</span><span class="nv">set-face-attribute</span> <span class="ss">&#39;tabbar-separator</span> <span class="no">nil</span>
+<span class="lineno">22</span>          <span class="ss">:height</span> <span class="mf">0.7</span><span class="p">)</span>
+</code></pre></div>
+
+
+<p>在那篇文章里，所有的<code>set-face-attribute</code>的第一个参数都以<code>-face</code>结尾，但是到我这来就没有了，所以直接copy过来是不能跑的。看了tabbar.el，那些face都是没有<code>-face</code>的，只好跟着把<code>-face</code>去掉了，重启一下，可以发现样式改过来了。</p>
+
+<p>附上emacs截图一张
+<img src="/assets/images/emacs-summary/emacs-screenshot.png" alt="截图" /></p>
+
+<p>未完待续...</p>
+]]></content:encoded>
+    </item>
+    
+  </channel>
+</rss>
