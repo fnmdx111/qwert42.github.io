@@ -7,8 +7,20 @@
     <title>陈傻鸡</title>
     <link href="http://mad4alcohol.github.com/feed/" rel="self" />
     <link href="http://webfrogs.github.com" />
-    <lastBuildDate>2013-05-10T15:23:30+08:00</lastBuildDate>
+    <lastBuildDate>2013-05-12T01:51:50+08:00</lastBuildDate>
     <webMaster>ccf.developer@gmail.com</webMaster>
+    
+    <item>
+      <title>PyQt的Model/View框架的个人总结</title>
+      <link href="http://mad4alcohol.github.com/2013/05/12/pyqt-model-view-framework/"/>
+      <pubDate>2013-05-12T00:00:00+08:00</pubDate>
+      <author>陈傻鸡</author>
+      <guid>http://mad4alcohol.github.com/2013/05/12/pyqt-model-view-framework</guid>
+      <content:encoded><![CDATA[<p>先开个坑。现在太晚了。</p>
+
+<p>有时间补上。</p>
+]]></content:encoded>
+    </item>
     
     <item>
       <title>不规范地简述一下JPEG原理</title>
@@ -22,9 +34,12 @@
 
 <p>说到JPEG，就不能不说DCT。</p>
 
-<p>所谓DCT（Discrete Cosine Transform），离散余弦变换，跟离散傅里叶变换类似，可以用来把时空域的数据变换到频域上。</p>
+<p>所谓<a href="http://en.wikipedia.org/wiki/Discrete_cosine_transform">DCT (Discrete Cosine Transform)</a>，离散余弦变换，跟离散傅里叶变换类似，可以用来把时空域的数据变换到频域上。</p>
 
-<p>这里直接说二维DCT变换，变换的输入是一个矩阵A（比如一个方阵，内容是0到255，即一个字节的整数），变换的输出是一个浮点数矩阵B（图晚点补上），可以看到除了矩阵左上角以外，其他元素基本上都是0左右的数。如果把这些数全部取值为0得到B'，再做逆变换得到矩阵A'，可以发现，A'的每个元素值跟A的每个元素值差距不大。也就是说，A的能量，经过DCT，被很好的聚集到了B的左上角（实际上如果去看DCT的公式可以发现B的(0, 0)实际上就是A的所有元素的平均值）。位于(0, 0)的值就是DC系数，左上角的其他值可以被认为是低频的AC系数，除了左上角的值可以称为是高频的AC系数，由于人对低频信息敏感，对高频信息不敏感，也就可以认为原对于人来说，矩阵A的主要信息都在B（和B'）的左上角。</p>
+<p>这里直接说二维DCT变换，变换的输入是一个矩阵A（比如一个方阵，内容是0到255，即一个字节的整数）：
+<img src="/assets/images/jpeg-thoughts/jpeg-thoughts-mat-a.png" alt="jpeg-thoughts-mat-a.png" />
+变换的输出是一个浮点数矩阵B <img src="/assets/images/jpeg-thoughts/jpeg-thoughts-mat-b.png" alt="jpeg-thoughts-mat-b.png" />
+可以看到除了矩阵左上角以外，其他元素基本上都是0左右的数。如果把这些数全部取值为0得到B'，再做逆变换得到矩阵A'，可以发现，A'的每个元素值跟A的每个元素值差距不大。也就是说，A的能量，经过DCT，被很好的聚集到了B的左上角（实际上如果去看DCT-I的公式可以发现结果向量的第一个值实际上就是输入向量的所有元素的平均值）。位于(0, 0)的值就是DC系数，左上角的其他值可以被认为是低频的AC系数，除了左上角的值可以称为是高频的AC系数，由于人对低频信息敏感，对高频信息不敏感，也就可以认为原对于人来说，矩阵A的主要信息都在B（和B'）的左上角。</p>
 
 <p>JPEG能压缩图片的最主要的原理就在DCT里面：经过DCT变换之后，再舍去一部分无关紧要的信息，这样就减少了要编码的信息的量，从而达到压缩的功能。</p>
 
