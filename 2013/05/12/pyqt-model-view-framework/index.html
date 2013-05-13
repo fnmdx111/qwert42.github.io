@@ -196,7 +196,7 @@
 
 <p>生的<a href="http://qt-project.org/doc/qt-4.8/qtreeview.html">QTreeView</a>看起来是这样的 <img src="/assets/images/pyqt-model-view-framework/raw-treeview.png" alt="raw-treeview.png" />为了让它变熟，得先用<a href="http://qt-project.org/doc/qt-4.8/qtreeview.html#rootIsDecorated-prop"><code>setRootIsDecorated()</code></a>去掉左边的树形图用的线，然后用<a href="http://qt-project.org/doc/qt-4.8/qtreeview.html#itemsExpandable-prop"><code>setItemsExpandable()</code></a>让项目不能展开。变成这样 <img src="/assets/images/pyqt-model-view-framework/usable-treeview.png" alt="usable-treeview.png" /></p>
 
-<p>接下来调用<a href="http://qt-project.org/doc/qt-4.8/qabstractitemview.html#setModel"><code>setModel()</code></a>来设置view使用的model对象。虽然是<a href="http://qt-project.org/doc/qt-4.8/qtreeview.html">QTreeView</a>，但是它仍然支持<a href="http://qt-project.org/doc/qt-4.8/qabstracttablemodel.html">QAbstractTableModel</a>。</p>
+<p>接下来调用<a href="http://qt-project.org/doc/qt-4.8/qabstractitemview.html#setModel"><code>setModel()</code></a>来设置view使用的model对象。虽然是<a href="http://qt-project.org/doc/qt-4.8/qtreeview.html">QTreeView</a>，但是它仍然支持<a href="http://qt-project.org/doc/qt-4.8/qabstracttablemodel.html">QAbstractTableModel</a>。你也可以把这个model应用到<a href="http://qt-project.org/doc/qt-4.8/qtableview.html">QTableView</a>上，看看展示效果上的区别。</p>
 
 <h2>如何使用View和自定义的Model</h2>
 
