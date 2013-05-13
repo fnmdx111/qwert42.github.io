@@ -73,7 +73,7 @@
 
 <h2>概述</h2>
 
-<p>ui设计中，经常会有展示一系列数据的情况，如果是log那种流动的文字信息，可以用<a href="http://qt-project.org/doc/qt-4.8/qtextedit.html">QTextBrowser</a>来展示（之后会写点东西来具体说明一下）。如果是列表式的（树形，表形之类的），可以考虑用Qt的<a href="http://qt-project.org/doc/qt-4.8/model-view-programming.html">Model/View Framework</a>。这篇文章会介绍如何自定义model和如何使用model。一般来说，会这些就足够实现一些简单的功能了。Qt的delegate可能以后会添一篇文章，毕竟现在我也没怎么用过delegate。</p>
+<p>ui设计中，经常会有展示一系列数据的情况，如果是log那种流动的文字信息，可以用<a href="http://qt-project.org/doc/qt-4.8/qtextedit.html">QTextBrowser</a>来展示（<a href="../../13/log-handler-with-qtextbrowser/">参见这篇文章</a>）。如果是列表式的（树形，表形之类的），可以考虑用Qt的<a href="http://qt-project.org/doc/qt-4.8/model-view-programming.html">Model/View Framework</a>。这篇文章会介绍如何自定义model和如何使用model。一般来说，会这些就足够实现一些简单的功能了。Qt的delegate可能以后会添一篇文章，毕竟现在我也没怎么用过delegate。</p>
 
 <p>这个框架利用了经典的MVC设计模式，model用来提供数据，view用来展示数据，control用来控制view对用户输入的反应。而在Qt里，view和controller被合并成了view，也就是说Qt里的view有了（初步的）反应用户输入的功能，而为了提供灵活的处理方式，Qt引入了delegate。delegate可以自定义数据显示（render）和修改的方式。</p>
 
