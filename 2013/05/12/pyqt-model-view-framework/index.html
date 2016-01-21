@@ -2,10 +2,10 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
   <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-    <meta name="author" content="陈" />
-    <title>PyQt的Model/View框架的个人总结 | 陈</title>
+    <meta name="author" content="qwert42" />
+    <title>PyQt的Model/View框架的个人总结 | qwert42</title>
     <link rel="shortcut icon" href="/favicon.ico">
-    <link href="/feed/" rel="alternate" title="陈" type="application/atom+xml" />
+    <link href="/feed/" rel="alternate" title="qwert42" type="application/atom+xml" />
     <link rel="stylesheet" href="/media/css/style.css">
     <link rel="stylesheet" href="/media/css/highlight.css">
     <script type="text/javascript" src="/media/js/jquery-1.7.1.min.js"></script>
@@ -114,38 +114,48 @@
 </ul>
 
 
-<div class="highlight"><pre><code class="python"><span class="lineno">1</span> <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
-<span class="lineno">2</span>     <span class="nb">super</span><span class="p">(</span><span class="n">ProcessModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
-<span class="lineno">3</span> 
-<span class="lineno">4</span>     <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span> <span class="o">=</span> <span class="n">parent</span>
-<span class="lineno">5</span>     <span class="bp">self</span><span class="o">.</span><span class="n">_proc_list</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-<span class="lineno">6</span> 
-<span class="lineno">7</span>     <span class="bp">self</span><span class="o">.</span><span class="n">headers</span> <span class="o">=</span> <span class="p">[</span><span class="s">u&#39;进程名&#39;</span><span class="p">,</span> <span class="s">u&#39;已分配 (kB)&#39;</span><span class="p">]</span>
-<span class="lineno">8</span>   
-</code></pre></div>
+<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8</pre></td><td class="code"><pre><span class="k">def</span> <span class="nf"><strong>init</strong></span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
+    <span class="nb">super</span><span class="p">(</span><span class="n">ProcessModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n"><strong>init</strong></span><span class="p">(</span><span class="n">parent</span><span class="p">)</span></p>
 
+<pre><code>&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;_parent&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;parent&lt;/span&gt;
+&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;_proc_list&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;defaultdict&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;int&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;headers&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;u'进程名'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;u'已分配 (kB)'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class="w"&gt;
+</code></pre>
+
+<p></span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <ul>
 <li><a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#rowCount"><code>rowCount()</code></a>用来定义列表项的个数</li>
 </ul>
 
 
-<div class="highlight"><pre><code class="python"><span class="lineno">1</span> <span class="k">def</span> <span class="nf">rowCount</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="lineno">2</span>     <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_proc_list</span><span class="p">)</span>
-<span class="lineno">3</span>   
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3</pre></td><td class="code"><pre><span class="k">def</span> <span class="nf">rowCount</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_proc_list</span><span class="p">)</span>
+    <span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <ul>
 <li><a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#columnCount"><code>columnCount()</code></a>用来定义列数，这里我们只有两列，所以返回定值</li>
 </ul>
 
 
-<div class="highlight"><pre><code class="python"><span class="lineno">1</span> <span class="k">def</span> <span class="nf">columnCount</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="lineno">2</span>     <span class="k">return</span> <span class="mi">2</span>
-<span class="lineno">3</span>   
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3</pre></td><td class="code"><pre><span class="k">def</span> <span class="nf">columnCount</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="mi">2</span>
+    <span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <ul>
 <li><a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#data"><code>data()</code></a>用来根据给定的index和role来返回数据</li>
@@ -163,44 +173,64 @@
 
 <p>所以<a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#data"><code>data()</code></a>的主要代码就是</p>
 
-<div class="highlight"><pre><code class="python"><span class="lineno"> 1</span> <span class="n">proc_name</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_proc_list</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="n">row</span><span class="p">]</span>
-<span class="lineno"> 2</span> <span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proc_list</span><span class="p">[</span><span class="n">proc_name</span><span class="p">]</span>
-<span class="lineno"> 3</span> <span class="k">if</span> <span class="n">role</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">TextAlignmentRole</span><span class="p">:</span>
-<span class="lineno"> 4</span>     <span class="k">if</span> <span class="n">col</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-<span class="lineno"> 5</span>         <span class="k">return</span> <span class="n">Qt</span><span class="o">.</span><span class="n">AlignLeft</span> <span class="o">|</span> <span class="n">Qt</span><span class="o">.</span><span class="n">AlignVCenter</span>
-<span class="lineno"> 6</span>     <span class="k">if</span> <span class="n">col</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-<span class="lineno"> 7</span>         <span class="k">return</span> <span class="n">Qt</span><span class="o">.</span><span class="n">AlignLeft</span> <span class="o">|</span> <span class="n">Qt</span><span class="o">.</span><span class="n">AlignVCenter</span>
-<span class="lineno"> 8</span> <span class="k">elif</span> <span class="n">role</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">DisplayRole</span><span class="p">:</span>
-<span class="lineno"> 9</span>     <span class="k">if</span> <span class="n">col</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-<span class="lineno">10</span>         <span class="k">return</span> <span class="n">QString</span><span class="p">(</span><span class="n">proc_name</span><span class="p">)</span>
-<span class="lineno">11</span>     <span class="k">elif</span> <span class="n">col</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-<span class="lineno">12</span>         <span class="k">return</span> <span class="n">QVariant</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
-<span class="lineno">13</span> <span class="k">elif</span> <span class="n">role</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">ForegroundRole</span><span class="p">:</span>
-<span class="lineno">14</span>     <span class="k">if</span> <span class="n">proc_name</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">last_alloc</span><span class="p">:</span>
-<span class="lineno">15</span>         <span class="k">return</span> <span class="n">QBrush</span><span class="p">(</span><span class="n">Qt</span><span class="o">.</span><span class="n">blue</span><span class="p">)</span>
-<span class="lineno">16</span> <span class="k">elif</span> <span class="n">role</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">UserRole</span><span class="p">:</span>
-<span class="lineno">17</span>     <span class="k">return</span> <span class="n">proc_name</span>
-<span class="lineno">18</span> <span class="k">return</span> <span class="n">QVariant</span><span class="p">()</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18</pre></td><td class="code"><pre><span class="n">proc_name</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n"><em>proc_list</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="n">row</span><span class="p">]</span>
+<span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n"></em>proc_list</span><span class="p">[</span><span class="n">proc_name</span><span class="p">]</span>
+<span class="k">if</span> <span class="n">role</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">TextAlignmentRole</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">col</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Qt</span><span class="o">.</span><span class="n">AlignLeft</span> <span class="o">|</span> <span class="n">Qt</span><span class="o">.</span><span class="n">AlignVCenter</span>
+    <span class="k">if</span> <span class="n">col</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Qt</span><span class="o">.</span><span class="n">AlignLeft</span> <span class="o">|</span> <span class="n">Qt</span><span class="o">.</span><span class="n">AlignVCenter</span>
+<span class="k">elif</span> <span class="n">role</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">DisplayRole</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">col</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">QString</span><span class="p">(</span><span class="n">proc_name</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">col</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">QVariant</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+<span class="k">elif</span> <span class="n">role</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">ForegroundRole</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">proc_name</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">last_alloc</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">QBrush</span><span class="p">(</span><span class="n">Qt</span><span class="o">.</span><span class="n">blue</span><span class="p">)</span>
+<span class="k">elif</span> <span class="n">role</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">UserRole</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">proc_name</span>
+<span class="k">return</span> <span class="n">QVariant</span><span class="p">()</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>当然还有一些boilerplate</p>
 
-<div class="highlight"><pre><code class="python"><span class="lineno">1</span> <span class="n">row</span><span class="p">,</span> <span class="n">col</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">row</span><span class="p">(),</span> <span class="n">index</span><span class="o">.</span><span class="n">column</span><span class="p">()</span>
-<span class="lineno">2</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">index</span><span class="o">.</span><span class="n">isValid</span><span class="p">()</span> \
-<span class="lineno">3</span>     <span class="ow">or</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">row</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">rowCount</span><span class="p">())</span> \
-<span class="lineno">4</span>     <span class="ow">or</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">col</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">columnCount</span><span class="p">()):</span>
-<span class="lineno">5</span>     <span class="k">return</span> <span class="n">QVariant</span><span class="p">()</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5</pre></td><td class="code"><pre><span class="n">row</span><span class="p">,</span> <span class="n">col</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">row</span><span class="p">(),</span> <span class="n">index</span><span class="o">.</span><span class="n">column</span><span class="p">()</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">index</span><span class="o">.</span><span class="n">isValid</span><span class="p">()</span> \
+    <span class="ow">or</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">row</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">rowCount</span><span class="p">())</span> \
+    <span class="ow">or</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">col</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">columnCount</span><span class="p">()):</span>
+    <span class="k">return</span> <span class="n">QVariant</span><span class="p">()</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>还有一些非必要的方法，比如用来提供header数据的类似data的方法<a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#headerData"><code>headerData()</code></a></p>
 
-<div class="highlight"><pre><code class="python"><span class="lineno">1</span> <span class="k">def</span> <span class="nf">headerData</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">orientation</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="n">Qt</span><span class="o">.</span><span class="n">DisplayRole</span><span class="p">):</span>
-<span class="lineno">2</span>     <span class="k">if</span> <span class="n">role</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">DisplayRole</span> <span class="ow">and</span> <span class="n">orientation</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">Horizontal</span><span class="p">:</span>
-<span class="lineno">3</span>         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="n">section</span><span class="p">]</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3</pre></td><td class="code"><pre><span class="k">def</span> <span class="nf">headerData</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">orientation</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="n">Qt</span><span class="o">.</span><span class="n">DisplayRole</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">role</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">DisplayRole</span> <span class="ow">and</span> <span class="n">orientation</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">Horizontal</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="n">section</span><span class="p">]</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>然后说说怎么合法地对model的数据做修改，根据文档中Resizable models的一节里说的，插入新数据前必须调用<a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#beginInsertRows"><code>beginInsertRows()</code></a>，插入结束后必须调用<a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#endInsertRows"><code>endInsertRows()</code></a>，同样，删除数据前必须调用<a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#beginRemoveRows"><code>beginRemoveRows()</code></a>，删除结束后必须调用<a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#endRemoveRows"><code>endRemoveRows()</code></a>，如果不这么做，根据实验，view中不会有变化。（对列的变化应该是一样的，但是我们这个例子中并不涉及到对列的修改，所以在此略去）。如果列表项的数量没有增加或者减少，只是内容改变了，则需要发射<a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#dataChanged"><code>dataChanged(QModelIndex, QModelIndex)</code></a>信号。根据我的实验，发射信号带的参数只需要是两个空的<a href="http://qt-project.org/doc/qt-4.8/qmodelindex.html"><code>QModelIndex()</code></a>就行了，可能数据量大了之后，指明范围会比较好。</p>
 
@@ -224,31 +254,35 @@
 
 <p>向进程列表中添加进程项目，首先要调用model的<a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#beginInsertRows"><code>beginInsertRows()</code></a>，然后修改数据来源（比如我们这里是个内置的<a href="http://docs.python.org/2/library/collections.html#collections.defaultdict">defaultdict</a>），修改完毕之后调用<a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#endInsertRows"><code>endInsertRows()</code></a>。</p>
 
-<div class="highlight"><pre><code class="python"><span class="lineno">1</span> <span class="bp">self</span><span class="o">.</span><span class="n">beginInsertRows</span><span class="p">(</span><span class="n">QModelIndex</span><span class="p">(),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-<span class="lineno">2</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proc_list</span><span class="p">[</span><span class="n">proc_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">size</span>
-<span class="lineno">3</span> <span class="bp">self</span><span class="o">.</span><span class="n">endInsertRows</span><span class="p">()</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3</pre></td><td class="code"><pre><span class="bp">self</span><span class="o">.</span><span class="n">beginInsertRows</span><span class="p">(</span><span class="n">QModelIndex</span><span class="p">(),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">_proc_list</span><span class="p">[</span><span class="n">proc_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">size</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">endInsertRows</span><span class="p">()</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>其中调用<a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#beginInsertRows"><code>beginInsertRows()</code></a>的时候用到的参数是<code>index, start, end</code>，这里为了简单，取了一些定值，对实际效果（好像）也没什么影响。
 删除项目也是差不多了，这里不再赘述。</p>
 
 <p>为了显示每个进程的对应列表，必须知道在进程列表中，当前选中的是哪一项。在<a href="http://qt-project.org/doc/qt-4.8/qabstractitemview.html">QAbstractItemView</a>里有一个方法<a href="http://qt-project.org/doc/qt-4.8/qabstractitemview.html#selectionModel"><code>selectionModel()</code></a>可以拿到这个view的<a href="http://qt-project.org/doc/qt-4.8/qitemselectionmodel.html">QItemSelectionModel</a>，它管理这个view关于<em>选择</em>的一切信息。可以同过它拿到被选中的行、列，或者判断是否有行或列被选中（具体方法参见<a href="http://qt-project.org/doc/qt-4.8/qitemselectionmodel.html">文档</a>。这里我们要用的是它的<a href="http://qt-project.org/doc/qt-4.8/qitemselectionmodel.html#currentRowChanged"><code>currentRowChanged()</code></a>信号。</p>
 
-<div class="highlight"><pre><code class="python"><span class="lineno">1</span> <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">proc_list_view</span><span class="o">.</span><span class="n">selectionModel</span><span class="p">(),</span>
-<span class="lineno">2</span>              <span class="n">SIGNAL</span><span class="p">(</span><span class="s">&#39;currentRowChanged(QModelIndex, QModelIndex)&#39;</span><span class="p">),</span>
-<span class="lineno">3</span>              <span class="bp">self</span><span class="o">.</span><span class="n">switch_page_table_model</span><span class="p">)</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3</pre></td><td class="code"><pre><span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">proc_list_view</span><span class="o">.</span><span class="n">selectionModel</span><span class="p">(),</span>
+             <span class="n">SIGNAL</span><span class="p">(</span><span class="s">'currentRowChanged(QModelIndex, QModelIndex)'</span><span class="p">),</span>
+             <span class="bp">self</span><span class="o">.</span><span class="n">switch_page_table_model</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>然后是这个信号连接到的槽的代码</p>
 
-<div class="highlight"><pre><code class="python"><span class="lineno">1</span> <span class="k">def</span> <span class="nf">switch_page_table_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">_</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-<span class="lineno">2</span>     <span class="n">proc_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_model</span><span class="o">.</span><span class="n">data</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="n">Qt</span><span class="o">.</span><span class="n">UserRole</span><span class="p">)</span>
-<span class="lineno">3</span>     <span class="bp">self</span><span class="o">.</span><span class="n">current_proc_name</span> <span class="o">=</span> <span class="n">proc_name</span>
-<span class="lineno">4</span>     <span class="bp">self</span><span class="o">.</span><span class="n">page_table_view</span><span class="o">.</span><span class="n">setModel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">page_table_models</span><span class="p">[</span><span class="n">proc_name</span><span class="p">])</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4</pre></td><td class="code"><pre><span class="k">def</span> <span class="nf">switch_page_table_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">_</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">proc_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_model</span><span class="o">.</span><span class="n">data</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="n">Qt</span><span class="o">.</span><span class="n">UserRole</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">current_proc_name</span> <span class="o">=</span> <span class="n">proc_name</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">page_table_view</span><span class="o">.</span><span class="n">setModel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">page_table_models</span><span class="p">[</span><span class="n">proc_name</span><span class="p">])</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>我维护了一个<a href="http://docs.python.org/2/library/collections.html#collections.defaultdict">defaultdict</a>，进程名做键，PageTableModel作为值，这个函数首先通过index拿到这个index对应的进程名<code>proc_name</code>，然后用<a href="http://qt-project.org/doc/qt-4.8/qabstractitemview.html#setModel"><code>setModel()</code></a>方法切换<code>self.page_table_view</code>使用的model。实现起来还是比较简单的。</p>
 
@@ -256,17 +290,24 @@
 
 <p>示例代码</p>
 
-<div class="highlight"><pre><code class="python"><span class="lineno">1</span> <span class="n">model</span> <span class="o">=</span> <span class="n">YourModel</span><span class="p">()</span>
-<span class="lineno">2</span> <span class="n">view1</span> <span class="o">=</span> <span class="n">QTableView</span><span class="p">()</span>
-<span class="lineno">3</span> <span class="n">view1</span><span class="o">.</span><span class="n">setModel</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-<span class="lineno">4</span> <span class="n">view2</span> <span class="o">=</span> <span class="n">QListView</span><span class="p">()</span>
-<span class="lineno">5</span> <span class="n">view2</span><span class="o">.</span><span class="n">setModel</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-<span class="lineno">6</span> <span class="c"># 注意：只有在setModel之后才能设置selectionModel</span>
-<span class="lineno">7</span> <span class="c"># 因为只有在设置了model之后view才会生成自己的selectionModel</span>
-<span class="lineno">8</span> <span class="c"># 如果在setModel之前设置，python会崩溃</span>
-<span class="lineno">9</span> <span class="n">view2</span><span class="o">.</span><span class="n">setSelectionModel</span><span class="p">(</span><span class="n">view1</span><span class="o">.</span><span class="n">selectionModel</span><span class="p">())</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9</pre></td><td class="code"><pre><span class="n">model</span> <span class="o">=</span> <span class="n">YourModel</span><span class="p">()</span>
+<span class="n">view1</span> <span class="o">=</span> <span class="n">QTableView</span><span class="p">()</span>
+<span class="n">view1</span><span class="o">.</span><span class="n">setModel</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="n">view2</span> <span class="o">=</span> <span class="n">QListView</span><span class="p">()</span>
+<span class="n">view2</span><span class="o">.</span><span class="n">setModel</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="c"># 注意：只有在setModel之后才能设置selectionModel</span>
+<span class="c"># 因为只有在设置了model之后view才会生成自己的selectionModel</span>
+<span class="c"># 如果在setModel之前设置，python会崩溃</span>
+<span class="n">view2</span><span class="o">.</span><span class="n">setSelectionModel</span><span class="p">(</span><span class="n">view1</span><span class="o">.</span><span class="n">selectionModel</span><span class="p">())</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <h2>关于delegate</h2>
 
@@ -282,13 +323,13 @@
 <br/>
 <br/>
 <span>
-	<a  href="http://mad4alcohol.github.io/2013/05/10/jpeg-thoughts/" class="pageNav"  >Previous</a>
+	<a  href="http://qwert42.github.io/2013/05/10/jpeg-thoughts/" class="pageNav"  >Previous</a>
 	&nbsp;&nbsp;&nbsp;
-	<a  href="http://mad4alcohol.github.io/2013/05/13/log-handler-with-qtextbrowser/" class="pageNav"  >Next</a>
+	<a  href="http://qwert42.github.io/2013/05/13/log-handler-with-qtextbrowser/" class="pageNav"  >Next</a>
 </span>
 <hr>
 <span class="author">
-  <a href="http://mad4alcohol.github.com">陈</a>
+  <a href="http://mad4alcohol.github.com">qwert42</a>
 </span>
 <span class="time">
   /
@@ -323,12 +364,12 @@ $(function(){
     var url = false;
         if (e.which == 37 || e.which == 74) {  // Left arrow and J
             
-        url = 'http://mad4alcohol.github.io/2013/05/10/jpeg-thoughts/';
+        url = 'http://qwert42.github.io/2013/05/10/jpeg-thoughts/';
         
         }
         else if (e.which == 39 || e.which == 75) {  // Right arrow and K
             
-        url = 'http://mad4alcohol.github.io/2013/05/13/log-handler-with-qtextbrowser/';
+        url = 'http://qwert42.github.io/2013/05/13/log-handler-with-qtextbrowser/';
         
         }
         if (url) {
@@ -347,7 +388,7 @@ $(function(){
       </div>
 
     <footer>
-    <p><small>Powered by <a href="https://github.com/mojombo/jekyll">Jekyll</a> & <a href="http://pages.github.com">GitHub</a> | Copyright 2012 - 2013 by <a href="/about/">陈</a> | <span class="label label-info" id="timeSpan"></span></small></p>
+    <p><small>Powered by <a href="https://github.com/mojombo/jekyll">Jekyll</a> & <a href="http://pages.github.com">GitHub</a> | Copyright 2012 - 2016 by <a href="/about/">qwert42</a> | <span class="label label-info" id="timeSpan"></span></small></p>
     </footer>
 
     </div>

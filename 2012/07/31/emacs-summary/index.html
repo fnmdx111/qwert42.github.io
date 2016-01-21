@@ -2,10 +2,10 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
   <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-    <meta name="author" content="陈" />
-    <title>折腾了一天的emacs，现在来写点总结 | 陈</title>
+    <meta name="author" content="qwert42" />
+    <title>折腾了一天的emacs，现在来写点总结 | qwert42</title>
     <link rel="shortcut icon" href="/favicon.ico">
-    <link href="/feed/" rel="alternate" title="陈" type="application/atom+xml" />
+    <link href="/feed/" rel="alternate" title="qwert42" type="application/atom+xml" />
     <link rel="stylesheet" href="/media/css/style.css">
     <link rel="stylesheet" href="/media/css/highlight.css">
     <script type="text/javascript" src="/media/js/jquery-1.7.1.min.js"></script>
@@ -109,123 +109,142 @@
 <p>首先得设置好语言环境（应该就是总编码的意思），
 用以下代码设置</p>
 
-<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nv">set-language-environment</span> <span class="ss">&#39;utf-8</span><span class="p">)</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1</pre></td><td class="code"><pre><span class="p">(</span><span class="nv">set-language-environment</span> <span class="ss">'utf-8</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>其中<code>'utf-8</code>表示的是一个引用（quote），表示一个唯一确定的标识，跟java里的枚举类型有点类似。</p>
 
 <p>然后设置汉字的渲染，
 我在google上搜过，得到的结论是强制设定一个字体应该能解决问题，在<a href="http://emacser.com/torture-emacs.htm">这篇文章</a>里copy了一段代码</p>
 
-<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nb">dolist</span> <span class="p">(</span><span class="nv">charset</span> <span class="o">&#39;</span><span class="p">(</span><span class="nv">kana</span> <span class="nv">han</span> <span class="nc">symbol</span> <span class="nv">cjk-misc</span> <span class="nv">bopomofo</span><span class="p">))</span>
-<span class="lineno">2</span>   <span class="p">(</span><span class="nv">set-fontset-font</span> <span class="p">(</span><span class="nv">frame-parameter</span> <span class="no">nil</span> <span class="ss">&#39;font</span><span class="p">)</span>
-<span class="lineno">3</span>                   <span class="nv">charset</span>
-<span class="lineno">4</span>                   <span class="p">(</span><span class="nv">font-spec</span> <span class="ss">:family</span> <span class="s">&quot;微软雅黑&quot;</span> <span class="ss">:size</span> <span class="mi">12</span><span class="p">)))</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4</pre></td><td class="code"><pre><span class="p">(</span><span class="nb">dolist</span> <span class="p">(</span><span class="nv">charset</span> <span class="o">'</span><span class="p">(</span><span class="nv">kana</span> <span class="nv">han</span> <span class="nc">symbol</span> <span class="nv">cjk-misc</span> <span class="nv">bopomofo</span><span class="p">))</span>
+  <span class="p">(</span><span class="nv">set-fontset-font</span> <span class="p">(</span><span class="nv">frame-parameter</span> <span class="no">nil</span> <span class="ss">'font</span><span class="p">)</span>
+                    <span class="nv">charset</span>
+                    <span class="p">(</span><span class="nv">font-spec</span> <span class="ss">:family</span> <span class="s">"微软雅黑"</span> <span class="ss">:size</span> <span class="mi">12</span><span class="p">)))</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>eval之后，渲染果然好多了，但是保存<code>.emacs</code>之后，新开一个emacs，又变回以前那种渲染了，经过又一次的百思不得其解之后，还是去翻文档，试着把<code>set-fontset-font</code>的第一个参数，即<code>(frame-parameter nil 'font)</code>，改成<code>"fontset-default"</code>，保存，重启，ok了。
 然后设置英文字体，把其中的<code>Bitstream Vera Sans Mono</code>换成你想要的字体名就行了，比如<code>Consolas</code></p>
 
-<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nv">set-face-attribute</span> <span class="ss">&#39;default</span> <span class="no">nil</span> <span class="ss">:font</span> <span class="s">&quot;Bitstream Vera Sans Mono-10&quot;</span><span class="p">)</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1</pre></td><td class="code"><pre><span class="p">(</span><span class="nv">set-face-attribute</span> <span class="ss">'default</span> <span class="no">nil</span> <span class="ss">:font</span> <span class="s">"Bitstream Vera Sans Mono-10"</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>ps: 在这里强烈推荐一下<a href="http://ftp.gnome.org/pub/GNOME/sources/ttf-bitstream-vera/1.10/">Bitstream Vera Sans Mono</a>，非常耐看的字体，再配上mactype的渲染简直完美（*nix个发行版的桌面一般自带比windows好看的多的渲染，mac就更不用说了）;)。</p>
 
 <p>接下来把那个烦人的工具栏去掉</p>
 
-<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">fboundp</span> <span class="ss">&#39;tool-bar-mode</span><span class="p">)</span>
-<span class="lineno">2</span>   <span class="p">(</span><span class="nv">tool-bar-mode</span> <span class="mi">-1</span><span class="p">))</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2</pre></td><td class="code"><pre><span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">fboundp</span> <span class="ss">'tool-bar-mode</span><span class="p">)</span>
+  <span class="p">(</span><span class="nv">tool-bar-mode</span> <span class="mi">-1</span><span class="p">))</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>其中在设置之前检测一下应该是为了兼容<code>nw</code>模式（因为既然在控制台下，工具栏什么的肯定是没有的吧）。如果你也不喜欢菜单栏，可以照葫芦画瓢，设置<code>menu-bar-mode</code>为<code>-1</code>。</p>
 
 <p>然后把总是在响的bell给关掉</p>
 
-<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="k">setq</span> <span class="nv">visible-bell</span> <span class="no">t</span><span class="p">)</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1</pre></td><td class="code"><pre><span class="p">(</span><span class="k">setq</span> <span class="nv">visible-bell</span> <span class="no">t</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>值得一提的是<code>setq</code>（set quoted）与<code>set</code>的区别，基本可以理解为以下两个表达式等价</p>
 
-<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="k">setq</span> <span class="nv">some-variable</span> <span class="no">t</span><span class="p">)</span>
-<span class="lineno">2</span> <span class="p">(</span><span class="nb">set</span> <span class="ss">&#39;some-variable</span> <span class="no">t</span><span class="p">)</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2</pre></td><td class="code"><pre><span class="p">(</span><span class="k">setq</span> <span class="nv">some-variable</span> <span class="no">t</span><span class="p">)</span>
+<span class="p">(</span><span class="nb">set</span> <span class="ss">'some-variable</span> <span class="no">t</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>然后设置主题，
 我试过用<code>M-x package-install</code>装color-theme，也试过直接从color-theme的官网上下zip，在emacs24下都有问题：<code>Symbol's function definition is void: plist-to-alist</code>，去源码里一看，调用<code>plist-to-alist</code>的那句后面写着<code>XEmacs only</code>-_-|，试过把这句注释，或者加个<code>plist-to-alist</code>的假实现，都不行。最后看了一个stackoverflow的回答说emacs24自带了主题管理（好像以前的版本也有？），先在buffer里用<code>M-x customize-themes</code>看所有的主题，选一个，然后在<code>.emacs</code>里加入</p>
 
-<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nv">load-theme</span> <span class="ss">&#39;wheatgrass</span> <span class="no">t</span><span class="p">)</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1</pre></td><td class="code"><pre><span class="p">(</span><span class="nv">load-theme</span> <span class="ss">'wheatgrass</span> <span class="no">t</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>外观这部分最后要说的是两个插件：tabbar和lineno
 但是在说tabbar的配置之前，要说一下emacs的package管理器的配置</p>
 
-<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nb">require</span> <span class="ss">&#39;package</span><span class="p">)</span>
-<span class="lineno">2</span> <span class="p">(</span><span class="nv">add-to-list</span> <span class="ss">&#39;package-archives</span>
-<span class="lineno">3</span>            <span class="o">&#39;</span><span class="p">(</span><span class="s">&quot;marmalade&quot;</span> <span class="o">.</span> <span class="s">&quot;http://marmalade-repo.org/packages/&quot;</span><span class="p">))</span>
-<span class="lineno">4</span> <span class="p">(</span><span class="nv">package-initialize</span><span class="p">)</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4</pre></td><td class="code"><pre><span class="p">(</span><span class="nb">require</span> <span class="ss">'package</span><span class="p">)</span>
+<span class="p">(</span><span class="nv">add-to-list</span> <span class="ss">'package-archives</span>
+             <span class="o">'</span><span class="p">(</span><span class="s">"marmalade"</span> <span class="o">.</span> <span class="s">"http://marmalade-repo.org/packages/"</span><span class="p">))</span>
+<span class="p">(</span><span class="nv">package-initialize</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>具体来说就是将"marmalade"和这个repo的url作为一个cons存进<code>package-archives</code>里。
 以后要安装什么插件，一般可以直接用命令<code>M-x package-install xxx</code>（以下简称pac-ins）安装。</p>
 
 <p>首先用pac-ins安装lineno，然后在<code>(package-initialize)</code>后面加入</p>
 
-<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nv">linum-mode</span> <span class="no">t</span><span class="p">)</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1</pre></td><td class="code"><pre><span class="p">(</span><span class="nv">linum-mode</span> <span class="no">t</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>注意，所有跟用pac-ins安装的插件有关的代码都只能写在<code>(package-initialize)</code>后面，否则会提示找不到变量之类的错误。</p>
 
 <p>然后安装tabbar，并加入以下代码</p>
 
-<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nb">require</span> <span class="ss">&#39;tabbar</span><span class="p">)</span>
-<span class="lineno">2</span> <span class="p">(</span><span class="nv">tabbar-mode</span> <span class="no">t</span><span class="p">)</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2</pre></td><td class="code"><pre><span class="p">(</span><span class="nb">require</span> <span class="ss">'tabbar</span><span class="p">)</span>
+<span class="p">(</span><span class="nv">tabbar-mode</span> <span class="no">t</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>重启之后就可以看到buffer上面都多了一行tab。</p>
 
 <p>为了更加方便地使用tabbar，可以绑定两个快捷键到tabbar-xward上，比如</p>
 
-<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nv">global-set-key</span> <span class="p">(</span><span class="nv">kbd</span> <span class="s">&quot;M-j&quot;</span><span class="p">)</span> <span class="ss">&#39;tabbar-backward</span><span class="p">)</span>
-<span class="lineno">2</span> <span class="p">(</span><span class="nv">global-set-key</span> <span class="p">(</span><span class="nv">kbd</span> <span class="s">&quot;M-k&quot;</span><span class="p">)</span> <span class="ss">&#39;tabbar-forward</span><span class="p">)</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2</pre></td><td class="code"><pre><span class="p">(</span><span class="nv">global-set-key</span> <span class="p">(</span><span class="nv">kbd</span> <span class="s">"M-j"</span><span class="p">)</span> <span class="ss">'tabbar-backward</span><span class="p">)</span>
+<span class="p">(</span><span class="nv">global-set-key</span> <span class="p">(</span><span class="nv">kbd</span> <span class="s">"M-k"</span><span class="p">)</span> <span class="ss">'tabbar-forward</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>另外，如果你觉得默认的样式很丑，可以用下面的代码来自定义，修改自<a href="http://blog.csdn.net/CherylNatsu/article/details/6204737">这篇文章</a>。</p>
 
-<div class="highlight"><pre><code class="cl"><span class="lineno"> 1</span> <span class="p">(</span><span class="nv">set-face-attribute</span> <span class="ss">&#39;tabbar-default</span> <span class="no">nil</span>
-<span class="lineno"> 2</span>          <span class="ss">:background</span> <span class="s">&quot;gray80&quot;</span>
-<span class="lineno"> 3</span>          <span class="ss">:family</span> <span class="s">&quot;Bitstream Vera Sans Mono&quot;</span>
-<span class="lineno"> 4</span>          <span class="ss">:foreground</span> <span class="s">&quot;gray30&quot;</span>
-<span class="lineno"> 5</span>          <span class="ss">:height</span> <span class="mf">0.75</span><span class="p">)</span>
-<span class="lineno"> 6</span> <span class="p">(</span><span class="nv">set-face-attribute</span> <span class="ss">&#39;tabbar-unselected</span> <span class="no">nil</span>
-<span class="lineno"> 7</span>          <span class="ss">:inherit</span> <span class="ss">&#39;tabbar-default</span>
-<span class="lineno"> 8</span>          <span class="ss">:background</span> <span class="s">&quot;gray85&quot;</span>
-<span class="lineno"> 9</span>          <span class="ss">:foreground</span> <span class="s">&quot;gray30&quot;</span>
-<span class="lineno">10</span>          <span class="ss">:box</span> <span class="no">nil</span><span class="p">)</span>
-<span class="lineno">11</span> <span class="p">(</span><span class="nv">set-face-attribute</span> <span class="ss">&#39;tabbar-selected</span> <span class="no">nil</span>
-<span class="lineno">12</span>          <span class="ss">:inherit</span> <span class="ss">&#39;tabbar-default</span>
-<span class="lineno">13</span>          <span class="ss">:background</span> <span class="s">&quot;#f2f2f6&quot;</span>
-<span class="lineno">14</span>          <span class="ss">:foreground</span> <span class="s">&quot;black&quot;</span>
-<span class="lineno">15</span>          <span class="ss">:box</span> <span class="no">nil</span><span class="p">)</span>
-<span class="lineno">16</span> <span class="p">(</span><span class="nv">set-face-attribute</span> <span class="ss">&#39;tabbar-button</span> <span class="no">nil</span>
-<span class="lineno">17</span>          <span class="ss">:inherit</span> <span class="ss">&#39;tabbar-default</span>
-<span class="lineno">18</span>          <span class="ss">:box</span> <span class="o">&#39;</span><span class="p">(</span><span class="ss">:line-width</span> <span class="mi">1</span>
-<span class="lineno">19</span>             <span class="ss">:color</span> <span class="s">&quot;gray72&quot;</span>
-<span class="lineno">20</span>             <span class="ss">:style</span> <span class="nv">released-button</span><span class="p">))</span>
-<span class="lineno">21</span> <span class="p">(</span><span class="nv">set-face-attribute</span> <span class="ss">&#39;tabbar-separator</span> <span class="no">nil</span>
-<span class="lineno">22</span>          <span class="ss">:height</span> <span class="mf">0.7</span><span class="p">)</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22</pre></td><td class="code"><pre><span class="p">(</span><span class="nv">set-face-attribute</span> <span class="ss">'tabbar-default</span> <span class="no">nil</span>
+            <span class="ss">:background</span> <span class="s">"gray80"</span>
+            <span class="ss">:family</span> <span class="s">"Bitstream Vera Sans Mono"</span>
+            <span class="ss">:foreground</span> <span class="s">"gray30"</span>
+            <span class="ss">:height</span> <span class="mf">0.75</span><span class="p">)</span>
+<span class="p">(</span><span class="nv">set-face-attribute</span> <span class="ss">'tabbar-unselected</span> <span class="no">nil</span>
+            <span class="ss">:inherit</span> <span class="ss">'tabbar-default</span>
+            <span class="ss">:background</span> <span class="s">"gray85"</span>
+            <span class="ss">:foreground</span> <span class="s">"gray30"</span>
+            <span class="ss">:box</span> <span class="no">nil</span><span class="p">)</span>
+<span class="p">(</span><span class="nv">set-face-attribute</span> <span class="ss">'tabbar-selected</span> <span class="no">nil</span>
+            <span class="ss">:inherit</span> <span class="ss">'tabbar-default</span>
+            <span class="ss">:background</span> <span class="s">"#f2f2f6"</span>
+            <span class="ss">:foreground</span> <span class="s">"black"</span>
+            <span class="ss">:box</span> <span class="no">nil</span><span class="p">)</span>
+<span class="p">(</span><span class="nv">set-face-attribute</span> <span class="ss">'tabbar-button</span> <span class="no">nil</span>
+            <span class="ss">:inherit</span> <span class="ss">'tabbar-default</span>
+            <span class="ss">:box</span> <span class="o">'</span><span class="p">(</span><span class="ss">:line-width</span> <span class="mi">1</span>
+               <span class="ss">:color</span> <span class="s">"gray72"</span>
+               <span class="ss">:style</span> <span class="nv">released-button</span><span class="p">))</span>
+<span class="p">(</span><span class="nv">set-face-attribute</span> <span class="ss">'tabbar-separator</span> <span class="no">nil</span>
+            <span class="ss">:height</span> <span class="mf">0.7</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>在那篇文章里，所有的<code>set-face-attribute</code>的第一个参数都以<code>-face</code>结尾，但是到我这来就没有了，所以直接copy过来是不能跑的。看了tabbar.el，那些face都是没有<code>-face</code>的，只好跟着把<code>-face</code>去掉了，重启一下，可以发现样式改过来了。</p>
 
@@ -242,11 +261,11 @@
 <span>
 	<a   class="pageNavInvalid"  >Previous</a>
 	&nbsp;&nbsp;&nbsp;
-	<a  href="http://mad4alcohol.github.io/2012/08/02/emacs-summary-cont/" class="pageNav"  >Next</a>
+	<a  href="http://qwert42.github.io/2012/08/02/emacs-summary-cont/" class="pageNav"  >Next</a>
 </span>
 <hr>
 <span class="author">
-  <a href="http://mad4alcohol.github.com">陈</a>
+  <a href="http://mad4alcohol.github.com">qwert42</a>
 </span>
 <span class="time">
   /
@@ -284,7 +303,7 @@ $(function(){
         }
         else if (e.which == 39 || e.which == 75) {  // Right arrow and K
             
-        url = 'http://mad4alcohol.github.io/2012/08/02/emacs-summary-cont/';
+        url = 'http://qwert42.github.io/2012/08/02/emacs-summary-cont/';
         
         }
         if (url) {
@@ -303,7 +322,7 @@ $(function(){
       </div>
 
     <footer>
-    <p><small>Powered by <a href="https://github.com/mojombo/jekyll">Jekyll</a> & <a href="http://pages.github.com">GitHub</a> | Copyright 2012 - 2013 by <a href="/about/">陈</a> | <span class="label label-info" id="timeSpan"></span></small></p>
+    <p><small>Powered by <a href="https://github.com/mojombo/jekyll">Jekyll</a> & <a href="http://pages.github.com">GitHub</a> | Copyright 2012 - 2016 by <a href="/about/">qwert42</a> | <span class="label label-info" id="timeSpan"></span></small></p>
     </footer>
 
     </div>

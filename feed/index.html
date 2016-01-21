@@ -4,18 +4,18 @@
         xmlns:atom="http://www.w3.org/2005/Atom"
   >
   <channel>
-    <title>陈</title>
-    <link href="http://mad4alcohol.github.io/feed/" rel="self" />
+    <title>qwert42</title>
+    <link href="http://qwert42.github.io/feed/" rel="self" />
     <link href="http://webfrogs.github.com" />
-    <lastBuildDate>2013-08-21T19:16:58+08:00</lastBuildDate>
+    <lastBuildDate>2016-01-21T17:27:11-05:00</lastBuildDate>
     <webMaster>ccf.developer@gmail.com</webMaster>
     
     <item>
       <title>pickle模块简介与一个简单的clojure实现</title>
-      <link href="http://mad4alcohol.github.io/2013/06/26/brief-analysis-on-pickle-and-an-implementation-in-clojure/"/>
-      <pubDate>2013-06-26T00:00:00+08:00</pubDate>
-      <author>陈</author>
-      <guid>http://mad4alcohol.github.io/2013/06/26/brief-analysis-on-pickle-and-an-implementation-in-clojure</guid>
+      <link href="http://qwert42.github.io/2013/06/26/brief-analysis-on-pickle-and-an-implementation-in-clojure/"/>
+      <pubDate>2013-06-26T00:00:00-04:00</pubDate>
+      <author>qwert42</author>
+      <guid>http://qwert42.github.io/2013/06/26/brief-analysis-on-pickle-and-an-implementation-in-clojure</guid>
       <content:encoded><![CDATA[<p>有段时间突然对二进制的数据产生了强烈的兴趣（具体原因可能是因为解析坦克世界的<code>dossier.dat</code>可以获得平时看不到的数据），寒假在家也闲不住，就跑去研究了一下pickle这个模块（坦克世界的那些数据实际上也就是pickle之后的东西）。然后用clojure做了一个<a href="https://github.com/mad4alcohol/naive-unpickler-clj">简易的unpickle库</a>，未来可能在有时间的时候会添加pickle的功能。</p>
 
 <h2>准备工作</h2>
@@ -52,38 +52,50 @@
 
 <p>比如</p>
 
-<div class="highlight"><pre><code class="python"><span class="lineno">1</span> <span class="n">I</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;LONG&#39;</span><span class="p">,</span>
-<span class="lineno">2</span>   <span class="n">code</span><span class="o">=</span><span class="s">&#39;L&#39;</span><span class="p">,</span>
-<span class="lineno">3</span>   <span class="n">arg</span><span class="o">=</span><span class="n">decimalnl_long</span><span class="p">,</span>
-<span class="lineno">4</span>   <span class="n">stack_before</span><span class="o">=</span><span class="p">[],</span>
-<span class="lineno">5</span>   <span class="n">stack_after</span><span class="o">=</span><span class="p">[</span><span class="n">pylong</span><span class="p">],</span>
-<span class="lineno">6</span>   <span class="n">proto</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-<span class="lineno">7</span>   <span class="n">doc</span><span class="o">=</span><span class="s">&quot;&quot;&quot;...&quot;&quot;&quot;</span><span class="p">)</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5
+6
+7</pre></td><td class="code"><pre><span class="n">I</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">'LONG'</span><span class="p">,</span>
+  <span class="n">code</span><span class="o">=</span><span class="s">'L'</span><span class="p">,</span>
+  <span class="n">arg</span><span class="o">=</span><span class="n">decimalnl_long</span><span class="p">,</span>
+  <span class="n">stack_before</span><span class="o">=</span><span class="p">[],</span>
+  <span class="n">stack_after</span><span class="o">=</span><span class="p">[</span><span class="n">pylong</span><span class="p">],</span>
+  <span class="n">proto</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+  <span class="n">doc</span><span class="o">=</span><span class="s">"""..."""</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>告诉我们<code>LONG</code>这个操作码，实际的码值（在字节流中的值）是'L'，即76，参数是<code>decimalnl_long</code>，在执行这个操作码后，栈上会多一个pylong对象，协议0提供这个操作码。</p>
 
 <p>再看<code>decimalnl_long</code>是什么玩意，</p>
 
-<div class="highlight"><pre><code class="python"><span class="lineno">1</span> <span class="n">decimalnl_long</span> <span class="o">=</span> <span class="n">ArgumentDescriptor</span><span class="p">(</span>
-<span class="lineno">2</span>                      <span class="n">name</span><span class="o">=</span><span class="s">&#39;decimalnl_long&#39;</span><span class="p">,</span>
-<span class="lineno">3</span>                      <span class="n">n</span><span class="o">=</span><span class="n">UP_TO_NEWLINE</span><span class="p">,</span>
-<span class="lineno">4</span>                      <span class="n">reader</span><span class="o">=</span><span class="n">read_decimalnl_long</span><span class="p">,</span>
-<span class="lineno">5</span>                      <span class="n">doc</span><span class="o">=</span><span class="s">&quot;&quot;&quot;A newline-terminated decimal integer literal.</span>
-<span class="lineno">6</span> <span class="s">                            ...&quot;&quot;&quot;</span><span class="p">)</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5
+6</pre></td><td class="code"><pre><span class="n">decimalnl_long</span> <span class="o">=</span> <span class="n">ArgumentDescriptor</span><span class="p">(</span>
+                     <span class="n">name</span><span class="o">=</span><span class="s">'decimalnl_long'</span><span class="p">,</span>
+                     <span class="n">n</span><span class="o">=</span><span class="n">UP_TO_NEWLINE</span><span class="p">,</span>
+                     <span class="n">reader</span><span class="o">=</span><span class="n">read_decimalnl_long</span><span class="p">,</span>
+                     <span class="n">doc</span><span class="o">=</span><span class="s">"""A newline-terminated decimal integer literal.
+                            ..."""</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>看doc说，<code>decimalnl_long</code>是一个以换行符结尾的十进制整数字面量。而且看它的<code>reader</code>项目可以看到这个参数的读取的具体实现，也就是<code>read_decimalnl_long</code>，如下</p>
 
-<div class="highlight"><pre><code class="python"><span class="lineno">1</span> <span class="k">def</span> <span class="nf">read_decimalnl_long</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
-<span class="lineno">2</span>     <span class="n">s</span> <span class="o">=</span> <span class="n">read_stringnl</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">decode</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">stripquotes</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-<span class="lineno">3</span>     <span class="k">if</span> <span class="ow">not</span> <span class="n">s</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&quot;L&quot;</span><span class="p">):</span>
-<span class="lineno">4</span>         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;trailing &#39;L&#39; required in </span><span class="si">%r</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">s</span><span class="p">)</span>
-<span class="lineno">5</span>     <span class="k">return</span> <span class="nb">long</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5</pre></td><td class="code"><pre><span class="k">def</span> <span class="nf">read_decimalnl_long</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">read_stringnl</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">decode</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">stripquotes</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">s</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">"L"</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="nb">ValueError</span><span class="p">(</span><span class="s">"trailing 'L' required in </span><span class="si">%</span><span class="s">r"</span> <span class="o">%</span> <span class="n">s</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">long</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>这个函数实际上是很简单的，用<code>read_stringnl</code>读取一个以换行结尾的字符串，并且判断它尾巴上有没有一个<code>L</code>，如果有<code>L</code>就用built-in函数<code>long</code>把这个字符串转换成一个<code>long</code>对象。</p>
 
@@ -111,15 +123,20 @@
 
 <p>这里举一个例子</p>
 
-<div class="highlight"><pre><code class="clojure"><span class="lineno">1</span> <span class="p">(</span><span class="nf">defopcode</span> <span class="nv">BINUNICODE</span> <span class="sc">\X</span>
-<span class="lineno">2</span>   <span class="p">(</span><span class="k">let </span><span class="p">[</span><span class="nv">len</span> <span class="p">(</span><span class="nf">from-byte-vector-lendian</span> <span class="p">(</span><span class="nf">next-4-byte</span><span class="p">))</span>
-<span class="lineno">3</span>         <span class="nv">data</span> <span class="p">(</span><span class="nf">next-n-byte</span> <span class="nv">len</span><span class="p">)]</span>
-<span class="lineno">4</span>     <span class="p">[(</span><span class="nb">conj </span><span class="nv">stack</span>
-<span class="lineno">5</span>            <span class="p">(</span><span class="nf">String.</span> <span class="p">(</span><span class="nf">to-java-byte-array</span> <span class="nv">data</span><span class="p">)</span>
-<span class="lineno">6</span>                     <span class="s">&quot;utf-8&quot;</span><span class="p">))</span>
-<span class="lineno">7</span>      <span class="nv">memo</span><span class="p">]))</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-clojure" data-lang="clojure"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5
+6
+7</pre></td><td class="code"><pre><span class="p">(</span><span class="nf">defopcode</span><span class="w"> </span><span class="n">BINUNICODE</span><span class="w"> </span><span class="sc">\X</span><span class="w">
+  </span><span class="p">(</span><span class="k">let</span><span class="w"> </span><span class="p">[</span><span class="n">len</span><span class="w"> </span><span class="p">(</span><span class="nf">from-byte-vector-lendian</span><span class="w"> </span><span class="p">(</span><span class="nf">next-4-byte</span><span class="p">))</span><span class="w">
+        </span><span class="n">data</span><span class="w"> </span><span class="p">(</span><span class="nf">next-n-byte</span><span class="w"> </span><span class="n">len</span><span class="p">)]</span><span class="w">
+    </span><span class="p">[(</span><span class="nb">conj</span><span class="w"> </span><span class="n">stack</span><span class="w">
+           </span><span class="p">(</span><span class="nf">String.</span><span class="w"> </span><span class="p">(</span><span class="nf">to-java-byte-array</span><span class="w"> </span><span class="n">data</span><span class="p">)</span><span class="w">
+                    </span><span class="s">"utf-8"</span><span class="p">))</span><span class="w">
+     </span><span class="n">memo</span><span class="p">]))</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>首先将字节流当前位置的后面4个字节读出来并且按小端（little endian）转换成一个<code>int</code>，使用的是自己写的函数<code>from-byte-vector-lendian</code>（python可以直接使用<code>struct.unpack</code>），绑定给<code>len</code>，随后又读取<code>len</code>个字节绑定给<code>data</code>，最后将<code>data</code>按<code>utf-8</code>解码为unicode的<code>String</code>后，压栈并返回。</p>
 
@@ -133,10 +150,10 @@
     
     <item>
       <title>在PyQt中实现一个可以变色的log窗口</title>
-      <link href="http://mad4alcohol.github.io/2013/05/13/log-handler-with-qtextbrowser/"/>
-      <pubDate>2013-05-13T00:00:00+08:00</pubDate>
-      <author>陈</author>
-      <guid>http://mad4alcohol.github.io/2013/05/13/log-handler-with-qtextbrowser</guid>
+      <link href="http://qwert42.github.io/2013/05/13/log-handler-with-qtextbrowser/"/>
+      <pubDate>2013-05-13T00:00:00-04:00</pubDate>
+      <author>qwert42</author>
+      <guid>http://qwert42.github.io/2013/05/13/log-handler-with-qtextbrowser</guid>
       <content:encoded><![CDATA[<h2>前述</h2>
 
 <p>在<a href="../../12/pyqt-model-view-framework/">之前的一篇文章</a>里说过，log这种流动的文字信息可以用<a href="http://qt-project.org/doc/qt-4.8/qtextedit.html">QTextBrowser</a>来展示。这篇文章会演示如何实现一个log窗口，而且还能根据特定log等级变化颜色。</p>
@@ -158,16 +175,22 @@
 <p>很简单，有了<a href="http://qt-project.org/doc/qt-4.8/qtextedit.html">QTextBrowser</a>之后，使用<a href="http://qt-project.org/doc/qt-4.8/qtextedit.html#append"><code>append()</code></a>槽就可以往里面添加了。而且QTextBrowser还支持html，也就是你可以在程序里写（至少是简单的）html代码，Qt可以正确的渲染出来。
 比如</p>
 
-<div class="highlight"><pre><code class="python"><span class="lineno">1</span> <span class="n">app</span> <span class="o">=</span> <span class="n">QApplication</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span>
-<span class="lineno">2</span> <span class="n">text_browser</span> <span class="o">=</span> <span class="n">QTextBrowser</span><span class="p">()</span>
-<span class="lineno">3</span> 
-<span class="lineno">4</span> <span class="n">text_browser</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;&lt;b&gt;this&lt;/b&gt; is &lt;font color=blue&gt;&lt;i&gt;append&lt;/i&gt;&lt;/font&gt;ed&#39;</span>
-<span class="lineno">5</span>                   <span class="s">&#39; into &lt;code&gt;text_browser&lt;/code&gt;&#39;</span><span class="p">)</span>
-<span class="lineno">6</span> 
-<span class="lineno">7</span> <span class="n">text_browser</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-<span class="lineno">8</span> <span class="n">app</span><span class="o">.</span><span class="n">exec_</span><span class="p">()</span>
-</code></pre></div>
+<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8</pre></td><td class="code"><pre><span class="n">app</span> <span class="o">=</span> <span class="n">QApplication</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span>
+<span class="n">text_browser</span> <span class="o">=</span> <span class="n">QTextBrowser</span><span class="p">()</span></p>
 
+<p><span class="n">text_browser</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">'&lt;b&gt;this&lt;/b&gt; is &lt;font color=blue&gt;&lt;i&gt;append&lt;/i&gt;&lt;/font&gt;ed'</span>
+                  <span class="s">' into &lt;code&gt;text_browser&lt;/code&gt;'</span><span class="p">)</span></p>
+
+<p><span class="n">text_browser</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<span class="n">app</span><span class="o">.</span><span class="n">exec_</span><span class="p">()</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>如图 <img src="/assets/images/log-handler-with-qtextbrowser/render-html.png" alt="render-html.png" /></p>
 
@@ -177,31 +200,38 @@
 
 <p>我们的主要思路就是，在<a href="http://docs.python.org/2/library/logging.html#logging.Formatter.format"><code>Formatter.format()</code></a>中，把给传入的参数的每个需要格式化的值外面套上<code>&lt;font color=%1&gt;</code>和<code>&lt;/font&gt;</code>，所以我们需要一个表，来确定什么参数要用什么颜色，像这样</p>
 
-<div class="highlight"><pre><code class="python"><span class="lineno">1</span> <span class="n">colors</span> <span class="o">=</span> <span class="p">{</span>
-<span class="lineno">2</span>     <span class="s">&#39;asctime&#39;</span><span class="p">:</span> <span class="s">&#39;blue&#39;</span><span class="p">,</span>
-<span class="lineno">3</span>     <span class="s">&#39;message&#39;</span><span class="p">:</span> <span class="s">&#39;green&#39;</span>
-<span class="lineno">4</span> <span class="p">}</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4</pre></td><td class="code"><pre><span class="n">colors</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">'asctime'</span><span class="p">:</span> <span class="s">'blue'</span><span class="p">,</span>
+    <span class="s">'message'</span><span class="p">:</span> <span class="s">'green'</span>
+<span class="p">}</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>但是这样不够灵活，如果这样写，我们怎么来按照log等级来选择不停的颜色呢，所以可以这样</p>
 
-<div class="highlight"><pre><code class="python"><span class="lineno">1</span> <span class="n">colors</span> <span class="o">=</span> <span class="p">{</span>
-<span class="lineno">2</span>     <span class="s">&#39;asctime&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="s">&#39;blue&#39;</span><span class="p">,</span>
-<span class="lineno">3</span>     <span class="s">&#39;levelname&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">record</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;DEBUG&#39;</span><span class="p">:</span> <span class="s">&#39;gray&#39;</span><span class="p">,</span>
-<span class="lineno">4</span>                                  <span class="s">&#39;INFO&#39;</span> <span class="p">:</span> <span class="s">&#39;green&#39;</span><span class="p">,</span>
-<span class="lineno">5</span>                                  <span class="s">&#39;WARNING&#39;</span><span class="p">:</span> <span class="s">&#39;orange&#39;</span><span class="p">}[</span><span class="n">record</span><span class="o">.</span><span class="n">levelname</span><span class="p">]</span>
-<span class="lineno">6</span> <span class="p">}</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5
+6</pre></td><td class="code"><pre><span class="n">colors</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">'asctime'</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="s">'blue'</span><span class="p">,</span>
+    <span class="s">'levelname'</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">record</span><span class="p">:</span> <span class="p">{</span><span class="s">'DEBUG'</span><span class="p">:</span> <span class="s">'gray'</span><span class="p">,</span>
+                                 <span class="s">'INFO'</span> <span class="p">:</span> <span class="s">'green'</span><span class="p">,</span>
+                                 <span class="s">'WARNING'</span><span class="p">:</span> <span class="s">'orange'</span><span class="p">}[</span><span class="n">record</span><span class="o">.</span><span class="n">levelname</span><span class="p">]</span>
+<span class="p">}</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>也就是颜色表的值是一个函数，按照输入来确定颜色，如果这么写，理论上（实际上也是可以实现的）我们甚至可以按照时间的不同来显示不同的颜色</p>
 
-<div class="highlight"><pre><code class="python"><span class="lineno">1</span> <span class="n">colors</span> <span class="o">=</span> <span class="p">{</span>
-<span class="lineno">2</span>     <span class="s">&#39;asctime&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="s">&#39;blue&#39;</span> <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span> <span class="k">else</span> <span class="s">&#39;red&#39;</span>
-<span class="lineno">3</span> <span class="p">}</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3</pre></td><td class="code"><pre><span class="n">colors</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">'asctime'</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="s">'blue'</span> <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span> <span class="k">else</span> <span class="s">'red'</span>
+<span class="p">}</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>效果如图 <img src="/assets/images/log-handler-with-qtextbrowser/asctime-change-color.png" alt="asctime-change-color.png" /></p>
 
@@ -209,10 +239,10 @@
 
 <p><a href="http://docs.python.org/2/library/logging.html#logging.Formatter.format"><code>Formatter.format()</code></a>带了一个参数<code>record</code>，保证了是<a href="http://docs.python.org/2/library/logging.html#logging.LogRecord">LogRecord</a>类的实例，我们要格式化的内容就在这个里面。但是我们只是一个formatter，不应该修改这个record，所以我们应该做一个这个record的拷贝，在这个拷贝的基础上，我们再来格式化log信息。</p>
 
-<div class="highlight"><pre><code class="python"><span class="lineno">1</span> <span class="k">def</span> <span class="nf">format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
-<span class="lineno">2</span>     <span class="n">_r</span> <span class="o">=</span> <span class="n">makeLogRecord</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">__dict__</span><span class="p">)</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2</pre></td><td class="code"><pre><span class="k">def</span> <span class="nf">format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
+    <span class="n">_r</span> <span class="o">=</span> <span class="n">makeLogRecord</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n"><strong>dict</strong></span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>其中<code>makeLogRecord</code>函数是我在logging库的源码里找到的，manual里好像没记录这个东西。</p>
 
@@ -222,24 +252,40 @@
 
 <p>所以基本上来说，因为<code>asctime</code>的原因，我们不能简单地按项目格式化他们的颜色之后简单的调用<code>super(ColoredFormatter, self).format(_r)</code>了。代码如下</p>
 
-<div class="highlight"><pre><code class="python"><span class="lineno"> 1</span>     <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">:</span>
-<span class="lineno"> 2</span>         <span class="k">if</span> <span class="n">item</span> <span class="o">==</span> <span class="s">&#39;asctime&#39;</span><span class="p">:</span>
-<span class="lineno"> 3</span>             <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">formatTime</span><span class="p">(</span><span class="n">_r</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">datefmt</span><span class="p">)</span>
-<span class="lineno"> 4</span>         <span class="k">else</span><span class="p">:</span>
-<span class="lineno"> 5</span>             <span class="n">info</span> <span class="o">=</span> <span class="n">_r</span><span class="o">.</span><span class="n">__getattribute__</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
-<span class="lineno"> 6</span>         <span class="n">_r</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="n">item</span><span class="p">,</span>
-<span class="lineno"> 7</span>                        <span class="s">&#39;&lt;font color=</span><span class="si">%s</span><span class="s">&gt;</span><span class="si">%s</span><span class="s">&lt;/font&gt;&#39;</span> <span class="o">%</span> <span class="p">(</span>
-<span class="lineno"> 8</span>                            <span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="n">item</span><span class="p">](</span><span class="n">_r</span><span class="p">),</span>
-<span class="lineno"> 9</span>                            <span class="n">info</span>
-<span class="lineno">10</span>                        <span class="p">))</span>
-<span class="lineno">11</span>     <span class="n">_r</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">_r</span><span class="o">.</span><span class="n">getMessage</span><span class="p">()</span>
-<span class="lineno">12</span> 
-<span class="lineno">13</span>     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">usesTime</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="s">&#39;asctime&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">:</span>
-<span class="lineno">14</span>         <span class="n">_r</span><span class="o">.</span><span class="n">asctime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">formatTime</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">datefmt</span><span class="p">)</span>
-<span class="lineno">15</span> 
-<span class="lineno">16</span>     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fmt</span> <span class="o">%</span> <span class="n">_r</span><span class="o">.</span><span class="n">__dict__</span>
-</code></pre></div>
+<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16</pre></td><td class="code"><pre>    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">item</span> <span class="o">==</span> <span class="s">'asctime'</span><span class="p">:</span>
+            <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">formatTime</span><span class="p">(</span><span class="n"><em>r</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">datefmt</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">info</span> <span class="o">=</span> <span class="n"></em>r</span><span class="o">.</span><span class="n"><strong>getattribute</strong></span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+        <span class="n"><em>r</span><span class="o">.</span><span class="n"><strong>setattr</strong></span><span class="p">(</span><span class="n">item</span><span class="p">,</span>
+                       <span class="s">'&lt;font color=</span><span class="si">%</span><span class="s">s&gt;</span><span class="si">%</span><span class="s">s&lt;/font&gt;'</span> <span class="o">%</span> <span class="p">(</span>
+                           <span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">[</span><span class="n">item</span><span class="p">](</span><span class="n"></em>r</span><span class="p">),</span>
+                           <span class="n">info</span>
+                       <span class="p">))</span>
+    <span class="n"><em>r</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n"></em>r</span><span class="o">.</span><span class="n">getMessage</span><span class="p">()</span></p>
 
+<pre><code>&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;usesTime&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="ow"&gt;and&lt;/span&gt; &lt;span class="ow"&gt;not&lt;/span&gt; &lt;span class="s"&gt;'asctime'&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;colors&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+    &lt;span class="n"&gt;_r&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;asctime&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;formatTime&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;record&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;datefmt&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;_fmt&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="n"&gt;_r&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;__dict__&lt;/span&gt;&lt;span class="w"&gt;
+</code></pre>
+
+<p></span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p><code>for</code>后面那一段基本上按照<a href="http://docs.python.org/2/library/logging.html#logging.Formatter.format"><code>Formatter.format()</code></a>的源码写的，但是为了简单没有照抄后面关于异常的格式化。</p>
 
@@ -250,57 +296,82 @@
 <p>使用<a href="http://docs.python.org/2/library/logging.html#handler-objects">logging.Handler</a>来实现log信息转播到Qt中的控件中，具体方法是实现<a href="http://docs.python.org/2/library/logging.html#handler-objects">Handler</a>的子类。
 实现这个子类很简单，只需要实现一个方法<a href="http://docs.python.org/2/library/logging.html#logging.Handler.emit"><code>Handler.emit()</code></a>，在这个方法中写操作[<code>QTextBrowser</code>]的相关代码。为了实现线程安全，我们需要利用Qt的信号/槽机制（这个机制天生就是线程安全的），但是[<code>QTextBrowser</code>]并没有提供添加信息的信号供我们发射，只提供了一个槽。所以我们得自己做一个信号</p>
 
-<div class="highlight"><pre><code class="python"><span class="lineno">1</span> <span class="k">def</span> <span class="nf">append_to_widget</span><span class="p">(</span><span class="n">widget</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
-<span class="lineno">2</span>     <span class="n">widget</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2</pre></td><td class="code"><pre><span class="k">def</span> <span class="nf">append_to_widget</span><span class="p">(</span><span class="n">widget</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+    <span class="n">widget</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>然后Handler的子类代码如下</p>
 
-<div class="highlight"><pre><code class="python"><span class="lineno">1</span> <span class="k">class</span> <span class="nc">LoggerHandler</span><span class="p">(</span><span class="n">Handler</span><span class="p">):</span>
-<span class="lineno">2</span>     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logger_widget</span><span class="p">):</span>
-<span class="lineno">3</span>         <span class="bp">self</span><span class="o">.</span><span class="n">logger_widget</span> <span class="o">=</span> <span class="n">logger_widget</span>
-<span class="lineno">4</span>         <span class="nb">super</span><span class="p">(</span><span class="n">LoggerHandler</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
-<span class="lineno">5</span> 
-<span class="lineno">6</span> 
-<span class="lineno">7</span>     <span class="k">def</span> <span class="nf">emit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
-<span class="lineno">8</span>         <span class="bp">self</span><span class="o">.</span><span class="n">logger_widget</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">SIGNAL</span><span class="p">(</span><span class="s">&#39;new_log(QString)&#39;</span><span class="p">),</span>
-<span class="lineno">9</span>                                 <span class="n">QString</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">record</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s">&#39;utf-8&#39;</span><span class="p">)))</span>
-</code></pre></div>
+<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9</pre></td><td class="code"><pre><span class="k">class</span> <span class="nc">LoggerHandler</span><span class="p">(</span><span class="n">Handler</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf"><strong>init</strong></span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logger_widget</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger_widget</span> <span class="o">=</span> <span class="n">logger_widget</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">LoggerHandler</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n"><strong>init</strong></span><span class="p">()</span></p>
 
+<pre><code>&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;emit&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;record&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;logger_widget&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;emit&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;SIGNAL&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;'new_log(QString)'&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;
+                            &lt;span class="n"&gt;QString&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;record&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;decode&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;'utf-8'&lt;/span&gt;&lt;span class="p"&gt;)))&lt;/span&gt;&lt;span class="w"&gt;
+</code></pre>
+
+<p></span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>然后配置代码如下</p>
 
-<div class="highlight"><pre><code class="python"><span class="lineno"> 1</span> <span class="n">logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
-<span class="lineno"> 2</span> 
-<span class="lineno"> 3</span> <span class="n">handler</span> <span class="o">=</span> <span class="n">LoggerHandler</span><span class="p">(</span><span class="n">text_browser</span><span class="p">)</span>
-<span class="lineno"> 4</span> <span class="n">handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">ColoredFormatter</span><span class="p">(</span>
-<span class="lineno"> 5</span>     <span class="n">fmt</span><span class="o">=</span><span class="s">&#39;</span><span class="si">%(asctime)s</span><span class="s"> </span><span class="si">%(levelname)s</span><span class="s"> </span><span class="si">%(message)s</span><span class="s">&#39;</span><span class="p">,</span>
-<span class="lineno"> 6</span>     <span class="n">datefmt</span><span class="o">=</span><span class="s">&#39;%m/</span><span class="si">%d</span><span class="s">T%H:%M:%S&#39;</span><span class="p">,</span>
-<span class="lineno"> 7</span>     <span class="n">colors</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;asctime&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="s">&#39;blue&#39;</span><span class="p">,</span>
-<span class="lineno"> 8</span>             <span class="s">&#39;levelname&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">record</span><span class="p">:</span>
-<span class="lineno"> 9</span>                 <span class="n">ColoredFormatter</span><span class="o">.</span><span class="n">gen_colorscheme</span><span class="p">()[</span><span class="n">record</span><span class="o">.</span><span class="n">levelname</span><span class="p">]}</span>
-<span class="lineno">10</span> <span class="p">))</span>
-<span class="lineno">11</span> 
-<span class="lineno">12</span> <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
-<span class="lineno">13</span> 
-<span class="lineno">14</span> <span class="n">text_browser</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">text_browser</span><span class="p">,</span>
-<span class="lineno">15</span>                      <span class="n">SIGNAL</span><span class="p">(</span><span class="s">&#39;new_log(QString)&#39;</span><span class="p">),</span>
-<span class="lineno">16</span>                      <span class="k">lambda</span> <span class="n">log</span><span class="p">:</span> <span class="n">append_to_widget</span><span class="p">(</span><span class="n">text_browser</span><span class="p">,</span> <span class="n">log</span><span class="p">))</span>
-</code></pre></div>
+<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16</pre></td><td class="code"><pre><span class="n">logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">(</span><span class="n"><strong>name</strong></span><span class="p">)</span></p>
 
+<p><span class="n">handler</span> <span class="o">=</span> <span class="n">LoggerHandler</span><span class="p">(</span><span class="n">text_browser</span><span class="p">)</span>
+<span class="n">handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">ColoredFormatter</span><span class="p">(</span>
+    <span class="n">fmt</span><span class="o">=</span><span class="s">'</span><span class="si">%(asctime)</span><span class="s">s </span><span class="si">%(levelname)</span><span class="s">s </span><span class="si">%(message)</span><span class="s">s'</span><span class="p">,</span>
+    <span class="n">datefmt</span><span class="o">=</span><span class="s">'</span><span class="si">%</span><span class="s">m/</span><span class="si">%</span><span class="s">dT</span><span class="si">%</span><span class="s">H:</span><span class="si">%</span><span class="s">M:</span><span class="si">%</span><span class="s">S'</span><span class="p">,</span>
+    <span class="n">colors</span><span class="o">=</span><span class="p">{</span><span class="s">'asctime'</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="s">'blue'</span><span class="p">,</span>
+            <span class="s">'levelname'</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">record</span><span class="p">:</span>
+                <span class="n">ColoredFormatter</span><span class="o">.</span><span class="n">gen_colorscheme</span><span class="p">()[</span><span class="n">record</span><span class="o">.</span><span class="n">levelname</span><span class="p">]}</span>
+<span class="p">))</span></p>
+
+<p><span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span></p>
+
+<p><span class="n">text_browser</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">text_browser</span><span class="p">,</span>
+                     <span class="n">SIGNAL</span><span class="p">(</span><span class="s">'new_log(QString)'</span><span class="p">),</span>
+                     <span class="k">lambda</span> <span class="n">log</span><span class="p">:</span> <span class="n">append_to_widget</span><span class="p">(</span><span class="n">text_browser</span><span class="p">,</span> <span class="n">log</span><span class="p">))</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>其中<code>ColoredFormatter.gen_colorscheme()</code>是我另外写的一个convenience函数，就是返回了一个默认的字典罢了，不多说。</p>
 
 <p>测试代码</p>
 
-<div class="highlight"><pre><code class="python"><span class="lineno">1</span> <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&#39;debug&#39;</span><span class="p">)</span>
-<span class="lineno">2</span> <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;info&#39;</span><span class="p">)</span>
-<span class="lineno">3</span> <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&#39;warning&#39;</span><span class="p">)</span>
-<span class="lineno">4</span> <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&#39;error&#39;</span><span class="p">)</span>
-<span class="lineno">5</span> <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s">&#39;critical&#39;</span><span class="p">)</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5</pre></td><td class="code"><pre><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">'debug'</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">'info'</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">'warning'</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">'error'</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s">'critical'</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>最终效果如图 <img src="/assets/images/log-handler-with-qtextbrowser/final.png" alt="final.png" /></p>
 
@@ -317,10 +388,10 @@
     
     <item>
       <title>PyQt的Model/View框架的个人总结</title>
-      <link href="http://mad4alcohol.github.io/2013/05/12/pyqt-model-view-framework/"/>
-      <pubDate>2013-05-12T00:00:00+08:00</pubDate>
-      <author>陈</author>
-      <guid>http://mad4alcohol.github.io/2013/05/12/pyqt-model-view-framework</guid>
+      <link href="http://qwert42.github.io/2013/05/12/pyqt-model-view-framework/"/>
+      <pubDate>2013-05-12T00:00:00-04:00</pubDate>
+      <author>qwert42</author>
+      <guid>http://qwert42.github.io/2013/05/12/pyqt-model-view-framework</guid>
       <content:encoded><![CDATA[<h2>概述</h2>
 
 <p>ui设计中，经常会有展示一系列数据的情况，如果是log那种流动的文字信息，可以用<a href="http://qt-project.org/doc/qt-4.8/qtextedit.html">QTextBrowser</a>来展示（<a href="../../13/log-handler-with-qtextbrowser/">参见这篇文章</a>）。如果是列表式的（树形，表形之类的），可以考虑用Qt的<a href="http://qt-project.org/doc/qt-4.8/model-view-programming.html">Model/View Framework</a>。这篇文章会介绍如何自定义model和如何使用model。一般来说，会这些就足够实现一些简单的功能了。Qt的delegate可能以后会添一篇文章，毕竟现在我也没怎么用过delegate。</p>
@@ -363,38 +434,48 @@
 </ul>
 
 
-<div class="highlight"><pre><code class="python"><span class="lineno">1</span> <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
-<span class="lineno">2</span>     <span class="nb">super</span><span class="p">(</span><span class="n">ProcessModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
-<span class="lineno">3</span> 
-<span class="lineno">4</span>     <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span> <span class="o">=</span> <span class="n">parent</span>
-<span class="lineno">5</span>     <span class="bp">self</span><span class="o">.</span><span class="n">_proc_list</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-<span class="lineno">6</span> 
-<span class="lineno">7</span>     <span class="bp">self</span><span class="o">.</span><span class="n">headers</span> <span class="o">=</span> <span class="p">[</span><span class="s">u&#39;进程名&#39;</span><span class="p">,</span> <span class="s">u&#39;已分配 (kB)&#39;</span><span class="p">]</span>
-<span class="lineno">8</span>   
-</code></pre></div>
+<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8</pre></td><td class="code"><pre><span class="k">def</span> <span class="nf"><strong>init</strong></span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
+    <span class="nb">super</span><span class="p">(</span><span class="n">ProcessModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n"><strong>init</strong></span><span class="p">(</span><span class="n">parent</span><span class="p">)</span></p>
 
+<pre><code>&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;_parent&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;parent&lt;/span&gt;
+&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;_proc_list&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;defaultdict&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;int&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;headers&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;u'进程名'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;u'已分配 (kB)'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class="w"&gt;
+</code></pre>
+
+<p></span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <ul>
 <li><a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#rowCount"><code>rowCount()</code></a>用来定义列表项的个数</li>
 </ul>
 
 
-<div class="highlight"><pre><code class="python"><span class="lineno">1</span> <span class="k">def</span> <span class="nf">rowCount</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="lineno">2</span>     <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_proc_list</span><span class="p">)</span>
-<span class="lineno">3</span>   
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3</pre></td><td class="code"><pre><span class="k">def</span> <span class="nf">rowCount</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_proc_list</span><span class="p">)</span>
+    <span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <ul>
 <li><a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#columnCount"><code>columnCount()</code></a>用来定义列数，这里我们只有两列，所以返回定值</li>
 </ul>
 
 
-<div class="highlight"><pre><code class="python"><span class="lineno">1</span> <span class="k">def</span> <span class="nf">columnCount</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="lineno">2</span>     <span class="k">return</span> <span class="mi">2</span>
-<span class="lineno">3</span>   
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3</pre></td><td class="code"><pre><span class="k">def</span> <span class="nf">columnCount</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="mi">2</span>
+    <span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <ul>
 <li><a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#data"><code>data()</code></a>用来根据给定的index和role来返回数据</li>
@@ -412,44 +493,64 @@
 
 <p>所以<a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#data"><code>data()</code></a>的主要代码就是</p>
 
-<div class="highlight"><pre><code class="python"><span class="lineno"> 1</span> <span class="n">proc_name</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_proc_list</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="n">row</span><span class="p">]</span>
-<span class="lineno"> 2</span> <span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proc_list</span><span class="p">[</span><span class="n">proc_name</span><span class="p">]</span>
-<span class="lineno"> 3</span> <span class="k">if</span> <span class="n">role</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">TextAlignmentRole</span><span class="p">:</span>
-<span class="lineno"> 4</span>     <span class="k">if</span> <span class="n">col</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-<span class="lineno"> 5</span>         <span class="k">return</span> <span class="n">Qt</span><span class="o">.</span><span class="n">AlignLeft</span> <span class="o">|</span> <span class="n">Qt</span><span class="o">.</span><span class="n">AlignVCenter</span>
-<span class="lineno"> 6</span>     <span class="k">if</span> <span class="n">col</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-<span class="lineno"> 7</span>         <span class="k">return</span> <span class="n">Qt</span><span class="o">.</span><span class="n">AlignLeft</span> <span class="o">|</span> <span class="n">Qt</span><span class="o">.</span><span class="n">AlignVCenter</span>
-<span class="lineno"> 8</span> <span class="k">elif</span> <span class="n">role</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">DisplayRole</span><span class="p">:</span>
-<span class="lineno"> 9</span>     <span class="k">if</span> <span class="n">col</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-<span class="lineno">10</span>         <span class="k">return</span> <span class="n">QString</span><span class="p">(</span><span class="n">proc_name</span><span class="p">)</span>
-<span class="lineno">11</span>     <span class="k">elif</span> <span class="n">col</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-<span class="lineno">12</span>         <span class="k">return</span> <span class="n">QVariant</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
-<span class="lineno">13</span> <span class="k">elif</span> <span class="n">role</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">ForegroundRole</span><span class="p">:</span>
-<span class="lineno">14</span>     <span class="k">if</span> <span class="n">proc_name</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">last_alloc</span><span class="p">:</span>
-<span class="lineno">15</span>         <span class="k">return</span> <span class="n">QBrush</span><span class="p">(</span><span class="n">Qt</span><span class="o">.</span><span class="n">blue</span><span class="p">)</span>
-<span class="lineno">16</span> <span class="k">elif</span> <span class="n">role</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">UserRole</span><span class="p">:</span>
-<span class="lineno">17</span>     <span class="k">return</span> <span class="n">proc_name</span>
-<span class="lineno">18</span> <span class="k">return</span> <span class="n">QVariant</span><span class="p">()</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18</pre></td><td class="code"><pre><span class="n">proc_name</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n"><em>proc_list</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="n">row</span><span class="p">]</span>
+<span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n"></em>proc_list</span><span class="p">[</span><span class="n">proc_name</span><span class="p">]</span>
+<span class="k">if</span> <span class="n">role</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">TextAlignmentRole</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">col</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Qt</span><span class="o">.</span><span class="n">AlignLeft</span> <span class="o">|</span> <span class="n">Qt</span><span class="o">.</span><span class="n">AlignVCenter</span>
+    <span class="k">if</span> <span class="n">col</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Qt</span><span class="o">.</span><span class="n">AlignLeft</span> <span class="o">|</span> <span class="n">Qt</span><span class="o">.</span><span class="n">AlignVCenter</span>
+<span class="k">elif</span> <span class="n">role</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">DisplayRole</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">col</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">QString</span><span class="p">(</span><span class="n">proc_name</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">col</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">QVariant</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+<span class="k">elif</span> <span class="n">role</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">ForegroundRole</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">proc_name</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">last_alloc</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">QBrush</span><span class="p">(</span><span class="n">Qt</span><span class="o">.</span><span class="n">blue</span><span class="p">)</span>
+<span class="k">elif</span> <span class="n">role</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">UserRole</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">proc_name</span>
+<span class="k">return</span> <span class="n">QVariant</span><span class="p">()</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>当然还有一些boilerplate</p>
 
-<div class="highlight"><pre><code class="python"><span class="lineno">1</span> <span class="n">row</span><span class="p">,</span> <span class="n">col</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">row</span><span class="p">(),</span> <span class="n">index</span><span class="o">.</span><span class="n">column</span><span class="p">()</span>
-<span class="lineno">2</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">index</span><span class="o">.</span><span class="n">isValid</span><span class="p">()</span> \
-<span class="lineno">3</span>     <span class="ow">or</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">row</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">rowCount</span><span class="p">())</span> \
-<span class="lineno">4</span>     <span class="ow">or</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">col</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">columnCount</span><span class="p">()):</span>
-<span class="lineno">5</span>     <span class="k">return</span> <span class="n">QVariant</span><span class="p">()</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5</pre></td><td class="code"><pre><span class="n">row</span><span class="p">,</span> <span class="n">col</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">row</span><span class="p">(),</span> <span class="n">index</span><span class="o">.</span><span class="n">column</span><span class="p">()</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">index</span><span class="o">.</span><span class="n">isValid</span><span class="p">()</span> \
+    <span class="ow">or</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">row</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">rowCount</span><span class="p">())</span> \
+    <span class="ow">or</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">col</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">columnCount</span><span class="p">()):</span>
+    <span class="k">return</span> <span class="n">QVariant</span><span class="p">()</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>还有一些非必要的方法，比如用来提供header数据的类似data的方法<a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#headerData"><code>headerData()</code></a></p>
 
-<div class="highlight"><pre><code class="python"><span class="lineno">1</span> <span class="k">def</span> <span class="nf">headerData</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">orientation</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="n">Qt</span><span class="o">.</span><span class="n">DisplayRole</span><span class="p">):</span>
-<span class="lineno">2</span>     <span class="k">if</span> <span class="n">role</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">DisplayRole</span> <span class="ow">and</span> <span class="n">orientation</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">Horizontal</span><span class="p">:</span>
-<span class="lineno">3</span>         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="n">section</span><span class="p">]</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3</pre></td><td class="code"><pre><span class="k">def</span> <span class="nf">headerData</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">orientation</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="n">Qt</span><span class="o">.</span><span class="n">DisplayRole</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">role</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">DisplayRole</span> <span class="ow">and</span> <span class="n">orientation</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">Horizontal</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="n">section</span><span class="p">]</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>然后说说怎么合法地对model的数据做修改，根据文档中Resizable models的一节里说的，插入新数据前必须调用<a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#beginInsertRows"><code>beginInsertRows()</code></a>，插入结束后必须调用<a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#endInsertRows"><code>endInsertRows()</code></a>，同样，删除数据前必须调用<a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#beginRemoveRows"><code>beginRemoveRows()</code></a>，删除结束后必须调用<a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#endRemoveRows"><code>endRemoveRows()</code></a>，如果不这么做，根据实验，view中不会有变化。（对列的变化应该是一样的，但是我们这个例子中并不涉及到对列的修改，所以在此略去）。如果列表项的数量没有增加或者减少，只是内容改变了，则需要发射<a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#dataChanged"><code>dataChanged(QModelIndex, QModelIndex)</code></a>信号。根据我的实验，发射信号带的参数只需要是两个空的<a href="http://qt-project.org/doc/qt-4.8/qmodelindex.html"><code>QModelIndex()</code></a>就行了，可能数据量大了之后，指明范围会比较好。</p>
 
@@ -473,31 +574,35 @@
 
 <p>向进程列表中添加进程项目，首先要调用model的<a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#beginInsertRows"><code>beginInsertRows()</code></a>，然后修改数据来源（比如我们这里是个内置的<a href="http://docs.python.org/2/library/collections.html#collections.defaultdict">defaultdict</a>），修改完毕之后调用<a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#endInsertRows"><code>endInsertRows()</code></a>。</p>
 
-<div class="highlight"><pre><code class="python"><span class="lineno">1</span> <span class="bp">self</span><span class="o">.</span><span class="n">beginInsertRows</span><span class="p">(</span><span class="n">QModelIndex</span><span class="p">(),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-<span class="lineno">2</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proc_list</span><span class="p">[</span><span class="n">proc_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">size</span>
-<span class="lineno">3</span> <span class="bp">self</span><span class="o">.</span><span class="n">endInsertRows</span><span class="p">()</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3</pre></td><td class="code"><pre><span class="bp">self</span><span class="o">.</span><span class="n">beginInsertRows</span><span class="p">(</span><span class="n">QModelIndex</span><span class="p">(),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">_proc_list</span><span class="p">[</span><span class="n">proc_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">size</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">endInsertRows</span><span class="p">()</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>其中调用<a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#beginInsertRows"><code>beginInsertRows()</code></a>的时候用到的参数是<code>index, start, end</code>，这里为了简单，取了一些定值，对实际效果（好像）也没什么影响。
 删除项目也是差不多了，这里不再赘述。</p>
 
 <p>为了显示每个进程的对应列表，必须知道在进程列表中，当前选中的是哪一项。在<a href="http://qt-project.org/doc/qt-4.8/qabstractitemview.html">QAbstractItemView</a>里有一个方法<a href="http://qt-project.org/doc/qt-4.8/qabstractitemview.html#selectionModel"><code>selectionModel()</code></a>可以拿到这个view的<a href="http://qt-project.org/doc/qt-4.8/qitemselectionmodel.html">QItemSelectionModel</a>，它管理这个view关于<em>选择</em>的一切信息。可以同过它拿到被选中的行、列，或者判断是否有行或列被选中（具体方法参见<a href="http://qt-project.org/doc/qt-4.8/qitemselectionmodel.html">文档</a>。这里我们要用的是它的<a href="http://qt-project.org/doc/qt-4.8/qitemselectionmodel.html#currentRowChanged"><code>currentRowChanged()</code></a>信号。</p>
 
-<div class="highlight"><pre><code class="python"><span class="lineno">1</span> <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">proc_list_view</span><span class="o">.</span><span class="n">selectionModel</span><span class="p">(),</span>
-<span class="lineno">2</span>              <span class="n">SIGNAL</span><span class="p">(</span><span class="s">&#39;currentRowChanged(QModelIndex, QModelIndex)&#39;</span><span class="p">),</span>
-<span class="lineno">3</span>              <span class="bp">self</span><span class="o">.</span><span class="n">switch_page_table_model</span><span class="p">)</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3</pre></td><td class="code"><pre><span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">proc_list_view</span><span class="o">.</span><span class="n">selectionModel</span><span class="p">(),</span>
+             <span class="n">SIGNAL</span><span class="p">(</span><span class="s">'currentRowChanged(QModelIndex, QModelIndex)'</span><span class="p">),</span>
+             <span class="bp">self</span><span class="o">.</span><span class="n">switch_page_table_model</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>然后是这个信号连接到的槽的代码</p>
 
-<div class="highlight"><pre><code class="python"><span class="lineno">1</span> <span class="k">def</span> <span class="nf">switch_page_table_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">_</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-<span class="lineno">2</span>     <span class="n">proc_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_model</span><span class="o">.</span><span class="n">data</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="n">Qt</span><span class="o">.</span><span class="n">UserRole</span><span class="p">)</span>
-<span class="lineno">3</span>     <span class="bp">self</span><span class="o">.</span><span class="n">current_proc_name</span> <span class="o">=</span> <span class="n">proc_name</span>
-<span class="lineno">4</span>     <span class="bp">self</span><span class="o">.</span><span class="n">page_table_view</span><span class="o">.</span><span class="n">setModel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">page_table_models</span><span class="p">[</span><span class="n">proc_name</span><span class="p">])</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4</pre></td><td class="code"><pre><span class="k">def</span> <span class="nf">switch_page_table_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">_</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">proc_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_model</span><span class="o">.</span><span class="n">data</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="n">Qt</span><span class="o">.</span><span class="n">UserRole</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">current_proc_name</span> <span class="o">=</span> <span class="n">proc_name</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">page_table_view</span><span class="o">.</span><span class="n">setModel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">page_table_models</span><span class="p">[</span><span class="n">proc_name</span><span class="p">])</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>我维护了一个<a href="http://docs.python.org/2/library/collections.html#collections.defaultdict">defaultdict</a>，进程名做键，PageTableModel作为值，这个函数首先通过index拿到这个index对应的进程名<code>proc_name</code>，然后用<a href="http://qt-project.org/doc/qt-4.8/qabstractitemview.html#setModel"><code>setModel()</code></a>方法切换<code>self.page_table_view</code>使用的model。实现起来还是比较简单的。</p>
 
@@ -505,17 +610,24 @@
 
 <p>示例代码</p>
 
-<div class="highlight"><pre><code class="python"><span class="lineno">1</span> <span class="n">model</span> <span class="o">=</span> <span class="n">YourModel</span><span class="p">()</span>
-<span class="lineno">2</span> <span class="n">view1</span> <span class="o">=</span> <span class="n">QTableView</span><span class="p">()</span>
-<span class="lineno">3</span> <span class="n">view1</span><span class="o">.</span><span class="n">setModel</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-<span class="lineno">4</span> <span class="n">view2</span> <span class="o">=</span> <span class="n">QListView</span><span class="p">()</span>
-<span class="lineno">5</span> <span class="n">view2</span><span class="o">.</span><span class="n">setModel</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-<span class="lineno">6</span> <span class="c"># 注意：只有在setModel之后才能设置selectionModel</span>
-<span class="lineno">7</span> <span class="c"># 因为只有在设置了model之后view才会生成自己的selectionModel</span>
-<span class="lineno">8</span> <span class="c"># 如果在setModel之前设置，python会崩溃</span>
-<span class="lineno">9</span> <span class="n">view2</span><span class="o">.</span><span class="n">setSelectionModel</span><span class="p">(</span><span class="n">view1</span><span class="o">.</span><span class="n">selectionModel</span><span class="p">())</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9</pre></td><td class="code"><pre><span class="n">model</span> <span class="o">=</span> <span class="n">YourModel</span><span class="p">()</span>
+<span class="n">view1</span> <span class="o">=</span> <span class="n">QTableView</span><span class="p">()</span>
+<span class="n">view1</span><span class="o">.</span><span class="n">setModel</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="n">view2</span> <span class="o">=</span> <span class="n">QListView</span><span class="p">()</span>
+<span class="n">view2</span><span class="o">.</span><span class="n">setModel</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="c"># 注意：只有在setModel之后才能设置selectionModel</span>
+<span class="c"># 因为只有在设置了model之后view才会生成自己的selectionModel</span>
+<span class="c"># 如果在setModel之前设置，python会崩溃</span>
+<span class="n">view2</span><span class="o">.</span><span class="n">setSelectionModel</span><span class="p">(</span><span class="n">view1</span><span class="o">.</span><span class="n">selectionModel</span><span class="p">())</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <h2>关于delegate</h2>
 
@@ -529,10 +641,10 @@
     
     <item>
       <title>不规范地简述一下JPEG原理</title>
-      <link href="http://mad4alcohol.github.io/2013/05/10/jpeg-thoughts/"/>
-      <pubDate>2013-05-10T00:00:00+08:00</pubDate>
-      <author>陈</author>
-      <guid>http://mad4alcohol.github.io/2013/05/10/jpeg-thoughts</guid>
+      <link href="http://qwert42.github.io/2013/05/10/jpeg-thoughts/"/>
+      <pubDate>2013-05-10T00:00:00-04:00</pubDate>
+      <author>qwert42</author>
+      <guid>http://qwert42.github.io/2013/05/10/jpeg-thoughts</guid>
       <content:encoded><![CDATA[<p>最近在做水得一比的信安大赛，按指导老师要求，去看了JPEG相关的东西。这里稍微记录一下。</p>
 
 <p>如果对JPEG的背景什么的感兴趣可以去看看 <a href="http://en.wikipedia.org/wiki/JPEG">JPEG的wiki页面</a> 。</p>
@@ -558,10 +670,10 @@
     
     <item>
       <title>2012年的暑假总结</title>
-      <link href="http://mad4alcohol.github.io/2012/09/02/summer-summary/"/>
-      <pubDate>2012-09-02T00:00:00+08:00</pubDate>
-      <author>陈</author>
-      <guid>http://mad4alcohol.github.io/2012/09/02/summer-summary</guid>
+      <link href="http://qwert42.github.io/2012/09/02/summer-summary/"/>
+      <pubDate>2012-09-02T00:00:00-04:00</pubDate>
+      <author>qwert42</author>
+      <guid>http://qwert42.github.io/2012/09/02/summer-summary</guid>
       <content:encoded><![CDATA[<p>将近2两个月的暑假过去了，写点总结性的东西，填充一下文章的数量。</p>
 
 <h2>首先</h2>
@@ -600,20 +712,22 @@
     
     <item>
       <title>Emacs总结（续）之YASnippet</title>
-      <link href="http://mad4alcohol.github.io/2012/08/02/emacs-summary-cont/"/>
-      <pubDate>2012-08-02T00:00:00+08:00</pubDate>
-      <author>陈</author>
-      <guid>http://mad4alcohol.github.io/2012/08/02/emacs-summary-cont</guid>
+      <link href="http://qwert42.github.io/2012/08/02/emacs-summary-cont/"/>
+      <pubDate>2012-08-02T00:00:00-04:00</pubDate>
+      <author>qwert42</author>
+      <guid>http://qwert42.github.io/2012/08/02/emacs-summary-cont</guid>
       <content:encoded><![CDATA[<p>这里我不建议用pac-ins装它，因为无论怎么按照网上给出的方法配置，重启之后都没有YASnippet这个菜单出现。我推荐的安装方法是去<a href="https://github.com/capitaomorte/yasnippet">YASnippet的主页</a>，按照README里的第一种方法安装，重启后成功出现了YASnippet菜单。</p>
 
 <p>YASnippet的配置是非常简单的，只需要在<code>.emacs</code>中加入</p>
 
-<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nv">add-to-list</span> <span class="ss">&#39;load-path</span>
-<span class="lineno">2</span>              <span class="s">&quot;your path to yasnippet&quot;</span><span class="p">)</span>
-<span class="lineno">3</span> <span class="p">(</span><span class="nb">require</span> <span class="ss">&#39;yasnippet</span><span class="p">)</span>
-<span class="lineno">4</span> <span class="p">(</span><span class="nv">yas/global-mode</span> <span class="mi">1</span><span class="p">)</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4</pre></td><td class="code"><pre><span class="p">(</span><span class="nv">add-to-list</span> <span class="ss">'load-path</span>
+             <span class="s">"your path to yasnippet"</span><span class="p">)</span>
+<span class="p">(</span><span class="nb">require</span> <span class="ss">'yasnippet</span><span class="p">)</span>
+<span class="p">(</span><span class="nv">yas/global-mode</span> <span class="mi">1</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>要说的一点是展开模板的快捷键Tab的设置，在主模式markdown-mode下，Tab被绑定到markdown-cycle，而辅模式yas-minor-mode下，Tab是yas/expand，被markdown-cycle覆盖了。这样非常不方便。解决的办法有两种：</p>
 
@@ -622,20 +736,20 @@
 </ul>
 
 
-<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nb">defun</span> <span class="nv">markdown-unset-tab</span> <span class="p">()</span>
-<span class="lineno">2</span>   <span class="p">(</span><span class="nv">define-key</span> <span class="nv">markdown-mode-map</span> <span class="p">(</span><span class="nv">kbd</span> <span class="s">&quot;&lt;tab&gt;&quot;</span><span class="p">)</span> <span class="no">nil</span><span class="p">))</span>
-<span class="lineno">3</span> <span class="p">(</span><span class="nv">add-hook</span> <span class="ss">&#39;markdown-mode-hook</span> <span class="ss">&#39;markdown-unset-tab</span><span class="p">)</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3</pre></td><td class="code"><pre><span class="p">(</span><span class="nb">defun</span> <span class="nv">markdown-unset-tab</span> <span class="p">()</span>
+  <span class="p">(</span><span class="nv">define-key</span> <span class="nv">markdown-mode-map</span> <span class="p">(</span><span class="nv">kbd</span> <span class="s">"&lt;tab&gt;"</span><span class="p">)</span> <span class="no">nil</span><span class="p">))</span>
+<span class="p">(</span><span class="nv">add-hook</span> <span class="ss">'markdown-mode-hook</span> <span class="ss">'markdown-unset-tab</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <ul>
 <li>将yas/expand绑定到其他快捷键上</li>
 </ul>
 
 
-<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nv">global-set-key</span> <span class="p">(</span><span class="nv">kbd</span> <span class="s">&quot;C-;&quot;</span><span class="p">)</span> <span class="ss">&#39;yas/expand</span><span class="p">)</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1</pre></td><td class="code"><pre><span class="p">(</span><span class="nv">global-set-key</span> <span class="p">(</span><span class="nv">kbd</span> <span class="s">"C-;"</span><span class="p">)</span> <span class="ss">'yas/expand</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>考虑到markdown里用tab的次数还是挺多的，我采用的是第二种方法。</p>
 
@@ -784,27 +898,37 @@ $0
 
 <p>首先把路径去掉，扩展名去掉，通过manual可以查得有两个函数可以用，于是代码如下</p>
 
-<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nb">defun</span> <span class="nv">mfa/extract-file-name</span> <span class="p">(</span><span class="nv">file-name</span><span class="p">)</span>
-<span class="lineno">2</span>   <span class="p">(</span><span class="nv">file-name-nondirectory</span> <span class="p">(</span><span class="nv">file-name-sans-extension</span> <span class="nv">file-name</span><span class="p">)))</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2</pre></td><td class="code"><pre><span class="p">(</span><span class="nb">defun</span> <span class="nv">mfa/extract-file-name</span> <span class="p">(</span><span class="nv">file-name</span><span class="p">)</span>
+  <span class="p">(</span><span class="nv">file-name-nondirectory</span> <span class="p">(</span><span class="nv">file-name-sans-extension</span> <span class="nv">file-name</span><span class="p">)))</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>然后可以发现实际名称是把上一步得到的值，用<code>-</code>打散之后，去掉前3个，再用<code>-</code>合起来，手册可以查到有<code>concat</code>、<code>split-string</code>和<code>cdddr</code>（<code>cdr</code>的变形），但是没有查到类似python里的<code>join</code>的函数，只能自己写了</p>
 
-<div class="highlight"><pre><code class="cl"><span class="lineno"> 1</span> <span class="p">(</span><span class="nb">defun</span> <span class="nv">mfa/join</span> <span class="p">(</span><span class="nv">l</span> <span class="nv">separator</span><span class="p">)</span>
-<span class="lineno"> 2</span>   <span class="p">(</span><span class="nb">apply</span> <span class="ss">&#39;concat</span>
-<span class="lineno"> 3</span>          <span class="p">(</span><span class="nb">car</span> <span class="nv">l</span><span class="p">)</span>
-<span class="lineno"> 4</span>          <span class="p">(</span><span class="nb">mapcar</span> <span class="nf">#&#39;</span><span class="p">(</span><span class="k">lambda</span> <span class="p">(</span><span class="nv">str</span><span class="p">)</span> <span class="p">(</span><span class="nv">concat</span> <span class="nv">separator</span> <span class="nv">str</span><span class="p">))</span>
-<span class="lineno"> 5</span>                  <span class="p">(</span><span class="nb">cdr</span> <span class="nv">l</span><span class="p">))))</span>
-<span class="lineno"> 6</span> 
-<span class="lineno"> 7</span> <span class="p">(</span><span class="nb">defun</span> <span class="nv">mfa/remove-date</span> <span class="p">(</span><span class="nv">file-name</span><span class="p">)</span>
-<span class="lineno"> 8</span>   <span class="p">(</span><span class="nv">mfa/join</span> <span class="p">(</span><span class="nb">cdddr</span> <span class="p">(</span><span class="nv">split-string</span> <span class="nv">file-name</span> <span class="s">&quot;-&quot;</span><span class="p">))</span>
-<span class="lineno"> 9</span>             <span class="s">&quot;-&quot;</span><span class="p">))</span>
-<span class="lineno">10</span> 
-<span class="lineno">11</span> <span class="p">(</span><span class="nb">defun</span> <span class="nv">mfa/get-directory-from-bufname</span> <span class="p">(</span><span class="nv">file-name</span><span class="p">)</span>
-<span class="lineno">12</span>   <span class="p">(</span><span class="nv">mfa/remove-date</span> <span class="p">(</span><span class="nv">mfa/extract-file-name</span> <span class="nv">file-name</span><span class="p">)))</span>
-</code></pre></div>
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12</pre></td><td class="code"><pre><span class="p">(</span><span class="nb">defun</span> <span class="nv">mfa/join</span> <span class="p">(</span><span class="nv">l</span> <span class="nv">separator</span><span class="p">)</span>
+  <span class="p">(</span><span class="nb">apply</span> <span class="ss">'concat</span>
+         <span class="p">(</span><span class="nb">car</span> <span class="nv">l</span><span class="p">)</span>
+         <span class="p">(</span><span class="nb">mapcar</span> <span class="nf">#'</span><span class="p">(</span><span class="k">lambda</span> <span class="p">(</span><span class="nv">str</span><span class="p">)</span> <span class="p">(</span><span class="nv">concat</span> <span class="nv">separator</span> <span class="nv">str</span><span class="p">))</span>
+                 <span class="p">(</span><span class="nb">cdr</span> <span class="nv">l</span><span class="p">))))</span></p>
 
+<p><span class="p">(</span><span class="nb">defun</span> <span class="nv">mfa/remove-date</span> <span class="p">(</span><span class="nv">file-name</span><span class="p">)</span>
+  <span class="p">(</span><span class="nv">mfa/join</span> <span class="p">(</span><span class="nb">cdddr</span> <span class="p">(</span><span class="nv">split-string</span> <span class="nv">file-name</span> <span class="s">"-"</span><span class="p">))</span>
+            <span class="s">"-"</span><span class="p">))</span></p>
+
+<p><span class="p">(</span><span class="nb">defun</span> <span class="nv">mfa/get-directory-from-bufname</span> <span class="p">(</span><span class="nv">file-name</span><span class="p">)</span>
+  <span class="p">(</span><span class="nv">mfa/remove-date</span> <span class="p">(</span><span class="nv">mfa/extract-file-name</span> <span class="nv">file-name</span><span class="p">)))</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>稍微解释一下<code>mfa/join</code>（如果你懂一些lisp，以下内容可以跳过）：</p>
 
@@ -823,31 +947,34 @@ $0
 <p>要求一个文件列表，首先得知道文件的目录在哪，如果用绝对路径，这个目录是很好知道的，但是如果要保证跨平台性，只能使用相对路径，手册里查到一个函数<code>expand-file-name</code>可以完成相对路径展开到绝对路径的工作，
 然后可以发现从我当前的编辑目录<code>./_posts</code>到<code>./assets</code>需要向上走一级目录，所求的目录用elisp表达出来即</p>
 
-<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nb">defun</span> <span class="nv">mfa/get-images-directory</span> <span class="p">(</span><span class="nv">file-name</span><span class="p">)</span>
-<span class="lineno">2</span>   <span class="p">(</span><span class="nv">concat</span> <span class="p">(</span><span class="nv">file-name-as-directory</span> <span class="p">(</span><span class="nv">expand-file-name</span> <span class="s">&quot;&quot;</span> <span class="s">&quot;../assets/images/&quot;</span><span class="p">))</span>
-<span class="lineno">3</span>           <span class="p">(</span><span class="nv">mfa/get-directory-from-bufname</span> <span class="nv">file-name</span><span class="p">)))</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3</pre></td><td class="code"><pre><span class="p">(</span><span class="nb">defun</span> <span class="nv">mfa/get-images-directory</span> <span class="p">(</span><span class="nv">file-name</span><span class="p">)</span>
+  <span class="p">(</span><span class="nv">concat</span> <span class="p">(</span><span class="nv">file-name-as-directory</span> <span class="p">(</span><span class="nv">expand-file-name</span> <span class="s">""</span> <span class="s">"../assets/images/"</span><span class="p">))</span>
+          <span class="p">(</span><span class="nv">mfa/get-directory-from-bufname</span> <span class="nv">file-name</span><span class="p">)))</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>如果调用<code>(mfa/get-images-directory (buffer-file-name))</code>在我的电脑上可得返回值为<code>d:/workspace/blog-content/assets/images/emacs-summary-cont</code></p>
 
 <p>接下来就可以用<code>directory-files</code>求得某个目录下的文件列表了，而且<code>directory-files</code>有个参数<code>:match-regexp</code>用来guard文件名。注意：这个函数返回的文件列表里的元素是绝对路径的，而我们只需要文件名，所以需要用<code>mapcar</code>处理一下，代码如下</p>
 
-<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nb">defun</span> <span class="nv">mfa/list-image-files</span> <span class="p">(</span><span class="nb">directory</span><span class="p">)</span>
-<span class="lineno">2</span>   <span class="p">(</span><span class="nb">mapcar</span> <span class="ss">&#39;file-name-nondirectory</span>
-<span class="lineno">3</span>           <span class="p">(</span><span class="nv">directory-files</span> <span class="nb">directory</span>
-<span class="lineno">4</span>                            <span class="ss">:match-regexp</span> <span class="s">&quot;\\.\\(png\\|jpg\\|jpeg\\|gif\\)&quot;</span><span class="p">)))</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4</pre></td><td class="code"><pre><span class="p">(</span><span class="nb">defun</span> <span class="nv">mfa/list-image-files</span> <span class="p">(</span><span class="nb">directory</span><span class="p">)</span>
+  <span class="p">(</span><span class="nb">mapcar</span> <span class="ss">'file-name-nondirectory</span>
+          <span class="p">(</span><span class="nv">directory-files</span> <span class="nb">directory</span>
+                           <span class="ss">:match-regexp</span> <span class="s">"\.\(png\|jpg\|jpeg\|gif\)"</span><span class="p">)))</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>Emacs Lisp用的正则表达式的语法是posix风格的（与vim一样），熟悉perl风格的同学们可能会觉得很奇怪（比如括号要转义了才有分组的作用）。</p>
 
 <p>最后一步，弄一个函数把上面的函数拼起来，首先在脑袋里想好输入输出：输入是一个带绝对路径的文件名，输出是这个文件名对应的图片文件夹下的图片文件名列表。</p>
 
-<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nb">defun</span> <span class="nv">mfa/yield-choices</span> <span class="p">(</span><span class="nv">file-name</span><span class="p">)</span>
-<span class="lineno">2</span>   <span class="p">(</span><span class="nv">mfa/list-image-files</span> <span class="p">(</span><span class="nv">mfa/get-images-directory</span> <span class="nv">file-name</span><span class="p">)))</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2</pre></td><td class="code"><pre><span class="p">(</span><span class="nb">defun</span> <span class="nv">mfa/yield-choices</span> <span class="p">(</span><span class="nv">file-name</span><span class="p">)</span>
+  <span class="p">(</span><span class="nv">mfa/list-image-files</span> <span class="p">(</span><span class="nv">mfa/get-images-directory</span> <span class="nv">file-name</span><span class="p">)))</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>这样一来，我们所有的elisp编码工作就完成了（可以看出来所有代码都是由函数拼起来的，这也是<a href="http://en.wikipedia.org/wiki/Functional_programming">函数式编程</a>的主要编码方式），可以把以上代码存入一个elisp文件中（注意，最后一行要写<code>(provide 'your-file-name)</code>），并在<code>.emacs</code>里配置一下，把这个文件像插件一样加载进来。</p>
 
@@ -889,10 +1016,10 @@ $0
     
     <item>
       <title>折腾了一天的emacs，现在来写点总结</title>
-      <link href="http://mad4alcohol.github.io/2012/07/31/emacs-summary/"/>
-      <pubDate>2012-07-31T00:00:00+08:00</pubDate>
-      <author>陈</author>
-      <guid>http://mad4alcohol.github.io/2012/07/31/emacs-summary</guid>
+      <link href="http://qwert42.github.io/2012/07/31/emacs-summary/"/>
+      <pubDate>2012-07-31T00:00:00-04:00</pubDate>
+      <author>qwert42</author>
+      <guid>http://qwert42.github.io/2012/07/31/emacs-summary</guid>
       <content:encoded><![CDATA[<p>今天一起床，突然心血来潮，想配个emacs来玩玩。一来增加点见识，一个<em>编辑器</em>到底能做到什么水平；二来，如果真配好了，以后用起来也应该会很方便；再来，我本来就对lisp类的语言很感兴趣（其实只要不是命令式的都感兴趣，嘛，满大街都是imperative的，这不科学），而且最开始是想作为clojure的ide来弄的，配配emacs也算是增进对lisp的了解吧。</p>
 
 <h2>准备工作</h2>
@@ -930,123 +1057,142 @@ $0
 <p>首先得设置好语言环境（应该就是总编码的意思），
 用以下代码设置</p>
 
-<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nv">set-language-environment</span> <span class="ss">&#39;utf-8</span><span class="p">)</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1</pre></td><td class="code"><pre><span class="p">(</span><span class="nv">set-language-environment</span> <span class="ss">'utf-8</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>其中<code>'utf-8</code>表示的是一个引用（quote），表示一个唯一确定的标识，跟java里的枚举类型有点类似。</p>
 
 <p>然后设置汉字的渲染，
 我在google上搜过，得到的结论是强制设定一个字体应该能解决问题，在<a href="http://emacser.com/torture-emacs.htm">这篇文章</a>里copy了一段代码</p>
 
-<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nb">dolist</span> <span class="p">(</span><span class="nv">charset</span> <span class="o">&#39;</span><span class="p">(</span><span class="nv">kana</span> <span class="nv">han</span> <span class="nc">symbol</span> <span class="nv">cjk-misc</span> <span class="nv">bopomofo</span><span class="p">))</span>
-<span class="lineno">2</span>   <span class="p">(</span><span class="nv">set-fontset-font</span> <span class="p">(</span><span class="nv">frame-parameter</span> <span class="no">nil</span> <span class="ss">&#39;font</span><span class="p">)</span>
-<span class="lineno">3</span>                   <span class="nv">charset</span>
-<span class="lineno">4</span>                   <span class="p">(</span><span class="nv">font-spec</span> <span class="ss">:family</span> <span class="s">&quot;微软雅黑&quot;</span> <span class="ss">:size</span> <span class="mi">12</span><span class="p">)))</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4</pre></td><td class="code"><pre><span class="p">(</span><span class="nb">dolist</span> <span class="p">(</span><span class="nv">charset</span> <span class="o">'</span><span class="p">(</span><span class="nv">kana</span> <span class="nv">han</span> <span class="nc">symbol</span> <span class="nv">cjk-misc</span> <span class="nv">bopomofo</span><span class="p">))</span>
+  <span class="p">(</span><span class="nv">set-fontset-font</span> <span class="p">(</span><span class="nv">frame-parameter</span> <span class="no">nil</span> <span class="ss">'font</span><span class="p">)</span>
+                    <span class="nv">charset</span>
+                    <span class="p">(</span><span class="nv">font-spec</span> <span class="ss">:family</span> <span class="s">"微软雅黑"</span> <span class="ss">:size</span> <span class="mi">12</span><span class="p">)))</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>eval之后，渲染果然好多了，但是保存<code>.emacs</code>之后，新开一个emacs，又变回以前那种渲染了，经过又一次的百思不得其解之后，还是去翻文档，试着把<code>set-fontset-font</code>的第一个参数，即<code>(frame-parameter nil 'font)</code>，改成<code>"fontset-default"</code>，保存，重启，ok了。
 然后设置英文字体，把其中的<code>Bitstream Vera Sans Mono</code>换成你想要的字体名就行了，比如<code>Consolas</code></p>
 
-<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nv">set-face-attribute</span> <span class="ss">&#39;default</span> <span class="no">nil</span> <span class="ss">:font</span> <span class="s">&quot;Bitstream Vera Sans Mono-10&quot;</span><span class="p">)</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1</pre></td><td class="code"><pre><span class="p">(</span><span class="nv">set-face-attribute</span> <span class="ss">'default</span> <span class="no">nil</span> <span class="ss">:font</span> <span class="s">"Bitstream Vera Sans Mono-10"</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>ps: 在这里强烈推荐一下<a href="http://ftp.gnome.org/pub/GNOME/sources/ttf-bitstream-vera/1.10/">Bitstream Vera Sans Mono</a>，非常耐看的字体，再配上mactype的渲染简直完美（*nix个发行版的桌面一般自带比windows好看的多的渲染，mac就更不用说了）;)。</p>
 
 <p>接下来把那个烦人的工具栏去掉</p>
 
-<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">fboundp</span> <span class="ss">&#39;tool-bar-mode</span><span class="p">)</span>
-<span class="lineno">2</span>   <span class="p">(</span><span class="nv">tool-bar-mode</span> <span class="mi">-1</span><span class="p">))</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2</pre></td><td class="code"><pre><span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">fboundp</span> <span class="ss">'tool-bar-mode</span><span class="p">)</span>
+  <span class="p">(</span><span class="nv">tool-bar-mode</span> <span class="mi">-1</span><span class="p">))</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>其中在设置之前检测一下应该是为了兼容<code>nw</code>模式（因为既然在控制台下，工具栏什么的肯定是没有的吧）。如果你也不喜欢菜单栏，可以照葫芦画瓢，设置<code>menu-bar-mode</code>为<code>-1</code>。</p>
 
 <p>然后把总是在响的bell给关掉</p>
 
-<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="k">setq</span> <span class="nv">visible-bell</span> <span class="no">t</span><span class="p">)</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1</pre></td><td class="code"><pre><span class="p">(</span><span class="k">setq</span> <span class="nv">visible-bell</span> <span class="no">t</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>值得一提的是<code>setq</code>（set quoted）与<code>set</code>的区别，基本可以理解为以下两个表达式等价</p>
 
-<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="k">setq</span> <span class="nv">some-variable</span> <span class="no">t</span><span class="p">)</span>
-<span class="lineno">2</span> <span class="p">(</span><span class="nb">set</span> <span class="ss">&#39;some-variable</span> <span class="no">t</span><span class="p">)</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2</pre></td><td class="code"><pre><span class="p">(</span><span class="k">setq</span> <span class="nv">some-variable</span> <span class="no">t</span><span class="p">)</span>
+<span class="p">(</span><span class="nb">set</span> <span class="ss">'some-variable</span> <span class="no">t</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>然后设置主题，
 我试过用<code>M-x package-install</code>装color-theme，也试过直接从color-theme的官网上下zip，在emacs24下都有问题：<code>Symbol's function definition is void: plist-to-alist</code>，去源码里一看，调用<code>plist-to-alist</code>的那句后面写着<code>XEmacs only</code>-_-|，试过把这句注释，或者加个<code>plist-to-alist</code>的假实现，都不行。最后看了一个stackoverflow的回答说emacs24自带了主题管理（好像以前的版本也有？），先在buffer里用<code>M-x customize-themes</code>看所有的主题，选一个，然后在<code>.emacs</code>里加入</p>
 
-<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nv">load-theme</span> <span class="ss">&#39;wheatgrass</span> <span class="no">t</span><span class="p">)</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1</pre></td><td class="code"><pre><span class="p">(</span><span class="nv">load-theme</span> <span class="ss">'wheatgrass</span> <span class="no">t</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>外观这部分最后要说的是两个插件：tabbar和lineno
 但是在说tabbar的配置之前，要说一下emacs的package管理器的配置</p>
 
-<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nb">require</span> <span class="ss">&#39;package</span><span class="p">)</span>
-<span class="lineno">2</span> <span class="p">(</span><span class="nv">add-to-list</span> <span class="ss">&#39;package-archives</span>
-<span class="lineno">3</span>            <span class="o">&#39;</span><span class="p">(</span><span class="s">&quot;marmalade&quot;</span> <span class="o">.</span> <span class="s">&quot;http://marmalade-repo.org/packages/&quot;</span><span class="p">))</span>
-<span class="lineno">4</span> <span class="p">(</span><span class="nv">package-initialize</span><span class="p">)</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4</pre></td><td class="code"><pre><span class="p">(</span><span class="nb">require</span> <span class="ss">'package</span><span class="p">)</span>
+<span class="p">(</span><span class="nv">add-to-list</span> <span class="ss">'package-archives</span>
+             <span class="o">'</span><span class="p">(</span><span class="s">"marmalade"</span> <span class="o">.</span> <span class="s">"http://marmalade-repo.org/packages/"</span><span class="p">))</span>
+<span class="p">(</span><span class="nv">package-initialize</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>具体来说就是将"marmalade"和这个repo的url作为一个cons存进<code>package-archives</code>里。
 以后要安装什么插件，一般可以直接用命令<code>M-x package-install xxx</code>（以下简称pac-ins）安装。</p>
 
 <p>首先用pac-ins安装lineno，然后在<code>(package-initialize)</code>后面加入</p>
 
-<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nv">linum-mode</span> <span class="no">t</span><span class="p">)</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1</pre></td><td class="code"><pre><span class="p">(</span><span class="nv">linum-mode</span> <span class="no">t</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>注意，所有跟用pac-ins安装的插件有关的代码都只能写在<code>(package-initialize)</code>后面，否则会提示找不到变量之类的错误。</p>
 
 <p>然后安装tabbar，并加入以下代码</p>
 
-<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nb">require</span> <span class="ss">&#39;tabbar</span><span class="p">)</span>
-<span class="lineno">2</span> <span class="p">(</span><span class="nv">tabbar-mode</span> <span class="no">t</span><span class="p">)</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2</pre></td><td class="code"><pre><span class="p">(</span><span class="nb">require</span> <span class="ss">'tabbar</span><span class="p">)</span>
+<span class="p">(</span><span class="nv">tabbar-mode</span> <span class="no">t</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>重启之后就可以看到buffer上面都多了一行tab。</p>
 
 <p>为了更加方便地使用tabbar，可以绑定两个快捷键到tabbar-xward上，比如</p>
 
-<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nv">global-set-key</span> <span class="p">(</span><span class="nv">kbd</span> <span class="s">&quot;M-j&quot;</span><span class="p">)</span> <span class="ss">&#39;tabbar-backward</span><span class="p">)</span>
-<span class="lineno">2</span> <span class="p">(</span><span class="nv">global-set-key</span> <span class="p">(</span><span class="nv">kbd</span> <span class="s">&quot;M-k&quot;</span><span class="p">)</span> <span class="ss">&#39;tabbar-forward</span><span class="p">)</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2</pre></td><td class="code"><pre><span class="p">(</span><span class="nv">global-set-key</span> <span class="p">(</span><span class="nv">kbd</span> <span class="s">"M-j"</span><span class="p">)</span> <span class="ss">'tabbar-backward</span><span class="p">)</span>
+<span class="p">(</span><span class="nv">global-set-key</span> <span class="p">(</span><span class="nv">kbd</span> <span class="s">"M-k"</span><span class="p">)</span> <span class="ss">'tabbar-forward</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>另外，如果你觉得默认的样式很丑，可以用下面的代码来自定义，修改自<a href="http://blog.csdn.net/CherylNatsu/article/details/6204737">这篇文章</a>。</p>
 
-<div class="highlight"><pre><code class="cl"><span class="lineno"> 1</span> <span class="p">(</span><span class="nv">set-face-attribute</span> <span class="ss">&#39;tabbar-default</span> <span class="no">nil</span>
-<span class="lineno"> 2</span>          <span class="ss">:background</span> <span class="s">&quot;gray80&quot;</span>
-<span class="lineno"> 3</span>          <span class="ss">:family</span> <span class="s">&quot;Bitstream Vera Sans Mono&quot;</span>
-<span class="lineno"> 4</span>          <span class="ss">:foreground</span> <span class="s">&quot;gray30&quot;</span>
-<span class="lineno"> 5</span>          <span class="ss">:height</span> <span class="mf">0.75</span><span class="p">)</span>
-<span class="lineno"> 6</span> <span class="p">(</span><span class="nv">set-face-attribute</span> <span class="ss">&#39;tabbar-unselected</span> <span class="no">nil</span>
-<span class="lineno"> 7</span>          <span class="ss">:inherit</span> <span class="ss">&#39;tabbar-default</span>
-<span class="lineno"> 8</span>          <span class="ss">:background</span> <span class="s">&quot;gray85&quot;</span>
-<span class="lineno"> 9</span>          <span class="ss">:foreground</span> <span class="s">&quot;gray30&quot;</span>
-<span class="lineno">10</span>          <span class="ss">:box</span> <span class="no">nil</span><span class="p">)</span>
-<span class="lineno">11</span> <span class="p">(</span><span class="nv">set-face-attribute</span> <span class="ss">&#39;tabbar-selected</span> <span class="no">nil</span>
-<span class="lineno">12</span>          <span class="ss">:inherit</span> <span class="ss">&#39;tabbar-default</span>
-<span class="lineno">13</span>          <span class="ss">:background</span> <span class="s">&quot;#f2f2f6&quot;</span>
-<span class="lineno">14</span>          <span class="ss">:foreground</span> <span class="s">&quot;black&quot;</span>
-<span class="lineno">15</span>          <span class="ss">:box</span> <span class="no">nil</span><span class="p">)</span>
-<span class="lineno">16</span> <span class="p">(</span><span class="nv">set-face-attribute</span> <span class="ss">&#39;tabbar-button</span> <span class="no">nil</span>
-<span class="lineno">17</span>          <span class="ss">:inherit</span> <span class="ss">&#39;tabbar-default</span>
-<span class="lineno">18</span>          <span class="ss">:box</span> <span class="o">&#39;</span><span class="p">(</span><span class="ss">:line-width</span> <span class="mi">1</span>
-<span class="lineno">19</span>             <span class="ss">:color</span> <span class="s">&quot;gray72&quot;</span>
-<span class="lineno">20</span>             <span class="ss">:style</span> <span class="nv">released-button</span><span class="p">))</span>
-<span class="lineno">21</span> <span class="p">(</span><span class="nv">set-face-attribute</span> <span class="ss">&#39;tabbar-separator</span> <span class="no">nil</span>
-<span class="lineno">22</span>          <span class="ss">:height</span> <span class="mf">0.7</span><span class="p">)</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22</pre></td><td class="code"><pre><span class="p">(</span><span class="nv">set-face-attribute</span> <span class="ss">'tabbar-default</span> <span class="no">nil</span>
+            <span class="ss">:background</span> <span class="s">"gray80"</span>
+            <span class="ss">:family</span> <span class="s">"Bitstream Vera Sans Mono"</span>
+            <span class="ss">:foreground</span> <span class="s">"gray30"</span>
+            <span class="ss">:height</span> <span class="mf">0.75</span><span class="p">)</span>
+<span class="p">(</span><span class="nv">set-face-attribute</span> <span class="ss">'tabbar-unselected</span> <span class="no">nil</span>
+            <span class="ss">:inherit</span> <span class="ss">'tabbar-default</span>
+            <span class="ss">:background</span> <span class="s">"gray85"</span>
+            <span class="ss">:foreground</span> <span class="s">"gray30"</span>
+            <span class="ss">:box</span> <span class="no">nil</span><span class="p">)</span>
+<span class="p">(</span><span class="nv">set-face-attribute</span> <span class="ss">'tabbar-selected</span> <span class="no">nil</span>
+            <span class="ss">:inherit</span> <span class="ss">'tabbar-default</span>
+            <span class="ss">:background</span> <span class="s">"#f2f2f6"</span>
+            <span class="ss">:foreground</span> <span class="s">"black"</span>
+            <span class="ss">:box</span> <span class="no">nil</span><span class="p">)</span>
+<span class="p">(</span><span class="nv">set-face-attribute</span> <span class="ss">'tabbar-button</span> <span class="no">nil</span>
+            <span class="ss">:inherit</span> <span class="ss">'tabbar-default</span>
+            <span class="ss">:box</span> <span class="o">'</span><span class="p">(</span><span class="ss">:line-width</span> <span class="mi">1</span>
+               <span class="ss">:color</span> <span class="s">"gray72"</span>
+               <span class="ss">:style</span> <span class="nv">released-button</span><span class="p">))</span>
+<span class="p">(</span><span class="nv">set-face-attribute</span> <span class="ss">'tabbar-separator</span> <span class="no">nil</span>
+            <span class="ss">:height</span> <span class="mf">0.7</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>在那篇文章里，所有的<code>set-face-attribute</code>的第一个参数都以<code>-face</code>结尾，但是到我这来就没有了，所以直接copy过来是不能跑的。看了tabbar.el，那些face都是没有<code>-face</code>的，只好跟着把<code>-face</code>去掉了，重启一下，可以发现样式改过来了。</p>
 

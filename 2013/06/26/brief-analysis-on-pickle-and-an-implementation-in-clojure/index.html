@@ -2,10 +2,10 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
   <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-    <meta name="author" content="陈" />
-    <title>pickle模块简介与一个简单的clojure实现 | 陈</title>
+    <meta name="author" content="qwert42" />
+    <title>pickle模块简介与一个简单的clojure实现 | qwert42</title>
     <link rel="shortcut icon" href="/favicon.ico">
-    <link href="/feed/" rel="alternate" title="陈" type="application/atom+xml" />
+    <link href="/feed/" rel="alternate" title="qwert42" type="application/atom+xml" />
     <link rel="stylesheet" href="/media/css/style.css">
     <link rel="stylesheet" href="/media/css/highlight.css">
     <script type="text/javascript" src="/media/js/jquery-1.7.1.min.js"></script>
@@ -110,38 +110,50 @@
 
 <p>比如</p>
 
-<div class="highlight"><pre><code class="python"><span class="lineno">1</span> <span class="n">I</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;LONG&#39;</span><span class="p">,</span>
-<span class="lineno">2</span>   <span class="n">code</span><span class="o">=</span><span class="s">&#39;L&#39;</span><span class="p">,</span>
-<span class="lineno">3</span>   <span class="n">arg</span><span class="o">=</span><span class="n">decimalnl_long</span><span class="p">,</span>
-<span class="lineno">4</span>   <span class="n">stack_before</span><span class="o">=</span><span class="p">[],</span>
-<span class="lineno">5</span>   <span class="n">stack_after</span><span class="o">=</span><span class="p">[</span><span class="n">pylong</span><span class="p">],</span>
-<span class="lineno">6</span>   <span class="n">proto</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-<span class="lineno">7</span>   <span class="n">doc</span><span class="o">=</span><span class="s">&quot;&quot;&quot;...&quot;&quot;&quot;</span><span class="p">)</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5
+6
+7</pre></td><td class="code"><pre><span class="n">I</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">'LONG'</span><span class="p">,</span>
+  <span class="n">code</span><span class="o">=</span><span class="s">'L'</span><span class="p">,</span>
+  <span class="n">arg</span><span class="o">=</span><span class="n">decimalnl_long</span><span class="p">,</span>
+  <span class="n">stack_before</span><span class="o">=</span><span class="p">[],</span>
+  <span class="n">stack_after</span><span class="o">=</span><span class="p">[</span><span class="n">pylong</span><span class="p">],</span>
+  <span class="n">proto</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+  <span class="n">doc</span><span class="o">=</span><span class="s">"""..."""</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>告诉我们<code>LONG</code>这个操作码，实际的码值（在字节流中的值）是'L'，即76，参数是<code>decimalnl_long</code>，在执行这个操作码后，栈上会多一个pylong对象，协议0提供这个操作码。</p>
 
 <p>再看<code>decimalnl_long</code>是什么玩意，</p>
 
-<div class="highlight"><pre><code class="python"><span class="lineno">1</span> <span class="n">decimalnl_long</span> <span class="o">=</span> <span class="n">ArgumentDescriptor</span><span class="p">(</span>
-<span class="lineno">2</span>                      <span class="n">name</span><span class="o">=</span><span class="s">&#39;decimalnl_long&#39;</span><span class="p">,</span>
-<span class="lineno">3</span>                      <span class="n">n</span><span class="o">=</span><span class="n">UP_TO_NEWLINE</span><span class="p">,</span>
-<span class="lineno">4</span>                      <span class="n">reader</span><span class="o">=</span><span class="n">read_decimalnl_long</span><span class="p">,</span>
-<span class="lineno">5</span>                      <span class="n">doc</span><span class="o">=</span><span class="s">&quot;&quot;&quot;A newline-terminated decimal integer literal.</span>
-<span class="lineno">6</span> <span class="s">                            ...&quot;&quot;&quot;</span><span class="p">)</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5
+6</pre></td><td class="code"><pre><span class="n">decimalnl_long</span> <span class="o">=</span> <span class="n">ArgumentDescriptor</span><span class="p">(</span>
+                     <span class="n">name</span><span class="o">=</span><span class="s">'decimalnl_long'</span><span class="p">,</span>
+                     <span class="n">n</span><span class="o">=</span><span class="n">UP_TO_NEWLINE</span><span class="p">,</span>
+                     <span class="n">reader</span><span class="o">=</span><span class="n">read_decimalnl_long</span><span class="p">,</span>
+                     <span class="n">doc</span><span class="o">=</span><span class="s">"""A newline-terminated decimal integer literal.
+                            ..."""</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>看doc说，<code>decimalnl_long</code>是一个以换行符结尾的十进制整数字面量。而且看它的<code>reader</code>项目可以看到这个参数的读取的具体实现，也就是<code>read_decimalnl_long</code>，如下</p>
 
-<div class="highlight"><pre><code class="python"><span class="lineno">1</span> <span class="k">def</span> <span class="nf">read_decimalnl_long</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
-<span class="lineno">2</span>     <span class="n">s</span> <span class="o">=</span> <span class="n">read_stringnl</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">decode</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">stripquotes</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-<span class="lineno">3</span>     <span class="k">if</span> <span class="ow">not</span> <span class="n">s</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&quot;L&quot;</span><span class="p">):</span>
-<span class="lineno">4</span>         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;trailing &#39;L&#39; required in </span><span class="si">%r</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">s</span><span class="p">)</span>
-<span class="lineno">5</span>     <span class="k">return</span> <span class="nb">long</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5</pre></td><td class="code"><pre><span class="k">def</span> <span class="nf">read_decimalnl_long</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">read_stringnl</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">decode</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">stripquotes</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">s</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">"L"</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="nb">ValueError</span><span class="p">(</span><span class="s">"trailing 'L' required in </span><span class="si">%</span><span class="s">r"</span> <span class="o">%</span> <span class="n">s</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">long</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>这个函数实际上是很简单的，用<code>read_stringnl</code>读取一个以换行结尾的字符串，并且判断它尾巴上有没有一个<code>L</code>，如果有<code>L</code>就用built-in函数<code>long</code>把这个字符串转换成一个<code>long</code>对象。</p>
 
@@ -169,15 +181,20 @@
 
 <p>这里举一个例子</p>
 
-<div class="highlight"><pre><code class="clojure"><span class="lineno">1</span> <span class="p">(</span><span class="nf">defopcode</span> <span class="nv">BINUNICODE</span> <span class="sc">\X</span>
-<span class="lineno">2</span>   <span class="p">(</span><span class="k">let </span><span class="p">[</span><span class="nv">len</span> <span class="p">(</span><span class="nf">from-byte-vector-lendian</span> <span class="p">(</span><span class="nf">next-4-byte</span><span class="p">))</span>
-<span class="lineno">3</span>         <span class="nv">data</span> <span class="p">(</span><span class="nf">next-n-byte</span> <span class="nv">len</span><span class="p">)]</span>
-<span class="lineno">4</span>     <span class="p">[(</span><span class="nb">conj </span><span class="nv">stack</span>
-<span class="lineno">5</span>            <span class="p">(</span><span class="nf">String.</span> <span class="p">(</span><span class="nf">to-java-byte-array</span> <span class="nv">data</span><span class="p">)</span>
-<span class="lineno">6</span>                     <span class="s">&quot;utf-8&quot;</span><span class="p">))</span>
-<span class="lineno">7</span>      <span class="nv">memo</span><span class="p">]))</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-clojure" data-lang="clojure"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5
+6
+7</pre></td><td class="code"><pre><span class="p">(</span><span class="nf">defopcode</span><span class="w"> </span><span class="n">BINUNICODE</span><span class="w"> </span><span class="sc">\X</span><span class="w">
+  </span><span class="p">(</span><span class="k">let</span><span class="w"> </span><span class="p">[</span><span class="n">len</span><span class="w"> </span><span class="p">(</span><span class="nf">from-byte-vector-lendian</span><span class="w"> </span><span class="p">(</span><span class="nf">next-4-byte</span><span class="p">))</span><span class="w">
+        </span><span class="n">data</span><span class="w"> </span><span class="p">(</span><span class="nf">next-n-byte</span><span class="w"> </span><span class="n">len</span><span class="p">)]</span><span class="w">
+    </span><span class="p">[(</span><span class="nb">conj</span><span class="w"> </span><span class="n">stack</span><span class="w">
+           </span><span class="p">(</span><span class="nf">String.</span><span class="w"> </span><span class="p">(</span><span class="nf">to-java-byte-array</span><span class="w"> </span><span class="n">data</span><span class="p">)</span><span class="w">
+                    </span><span class="s">"utf-8"</span><span class="p">))</span><span class="w">
+     </span><span class="n">memo</span><span class="p">]))</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>首先将字节流当前位置的后面4个字节读出来并且按小端（little endian）转换成一个<code>int</code>，使用的是自己写的函数<code>from-byte-vector-lendian</code>（python可以直接使用<code>struct.unpack</code>），绑定给<code>len</code>，随后又读取<code>len</code>个字节绑定给<code>data</code>，最后将<code>data</code>按<code>utf-8</code>解码为unicode的<code>String</code>后，压栈并返回。</p>
 
@@ -193,13 +210,13 @@
 <br/>
 <br/>
 <span>
-	<a  href="http://mad4alcohol.github.io/2013/05/13/log-handler-with-qtextbrowser/" class="pageNav"  >Previous</a>
+	<a  href="http://qwert42.github.io/2013/05/13/log-handler-with-qtextbrowser/" class="pageNav"  >Previous</a>
 	&nbsp;&nbsp;&nbsp;
 	<a   class="pageNavInvalid"  >Next</a>
 </span>
 <hr>
 <span class="author">
-  <a href="http://mad4alcohol.github.com">陈</a>
+  <a href="http://mad4alcohol.github.com">qwert42</a>
 </span>
 <span class="time">
   /
@@ -234,7 +251,7 @@ $(function(){
     var url = false;
         if (e.which == 37 || e.which == 74) {  // Left arrow and J
             
-        url = 'http://mad4alcohol.github.io/2013/05/13/log-handler-with-qtextbrowser/';
+        url = 'http://qwert42.github.io/2013/05/13/log-handler-with-qtextbrowser/';
         
         }
         else if (e.which == 39 || e.which == 75) {  // Right arrow and K
@@ -256,7 +273,7 @@ $(function(){
       </div>
 
     <footer>
-    <p><small>Powered by <a href="https://github.com/mojombo/jekyll">Jekyll</a> & <a href="http://pages.github.com">GitHub</a> | Copyright 2012 - 2013 by <a href="/about/">陈</a> | <span class="label label-info" id="timeSpan"></span></small></p>
+    <p><small>Powered by <a href="https://github.com/mojombo/jekyll">Jekyll</a> & <a href="http://pages.github.com">GitHub</a> | Copyright 2012 - 2016 by <a href="/about/">qwert42</a> | <span class="label label-info" id="timeSpan"></span></small></p>
     </footer>
 
     </div>

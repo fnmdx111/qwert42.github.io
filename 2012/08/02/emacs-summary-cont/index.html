@@ -2,10 +2,10 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
   <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-    <meta name="author" content="陈" />
-    <title>Emacs总结（续）之YASnippet | 陈</title>
+    <meta name="author" content="qwert42" />
+    <title>Emacs总结（续）之YASnippet | qwert42</title>
     <link rel="shortcut icon" href="/favicon.ico">
-    <link href="/feed/" rel="alternate" title="陈" type="application/atom+xml" />
+    <link href="/feed/" rel="alternate" title="qwert42" type="application/atom+xml" />
     <link rel="stylesheet" href="/media/css/style.css">
     <link rel="stylesheet" href="/media/css/highlight.css">
     <script type="text/javascript" src="/media/js/jquery-1.7.1.min.js"></script>
@@ -78,12 +78,14 @@
 
 <p>YASnippet的配置是非常简单的，只需要在<code>.emacs</code>中加入</p>
 
-<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nv">add-to-list</span> <span class="ss">&#39;load-path</span>
-<span class="lineno">2</span>              <span class="s">&quot;your path to yasnippet&quot;</span><span class="p">)</span>
-<span class="lineno">3</span> <span class="p">(</span><span class="nb">require</span> <span class="ss">&#39;yasnippet</span><span class="p">)</span>
-<span class="lineno">4</span> <span class="p">(</span><span class="nv">yas/global-mode</span> <span class="mi">1</span><span class="p">)</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4</pre></td><td class="code"><pre><span class="p">(</span><span class="nv">add-to-list</span> <span class="ss">'load-path</span>
+             <span class="s">"your path to yasnippet"</span><span class="p">)</span>
+<span class="p">(</span><span class="nb">require</span> <span class="ss">'yasnippet</span><span class="p">)</span>
+<span class="p">(</span><span class="nv">yas/global-mode</span> <span class="mi">1</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>要说的一点是展开模板的快捷键Tab的设置，在主模式markdown-mode下，Tab被绑定到markdown-cycle，而辅模式yas-minor-mode下，Tab是yas/expand，被markdown-cycle覆盖了。这样非常不方便。解决的办法有两种：</p>
 
@@ -92,20 +94,20 @@
 </ul>
 
 
-<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nb">defun</span> <span class="nv">markdown-unset-tab</span> <span class="p">()</span>
-<span class="lineno">2</span>   <span class="p">(</span><span class="nv">define-key</span> <span class="nv">markdown-mode-map</span> <span class="p">(</span><span class="nv">kbd</span> <span class="s">&quot;&lt;tab&gt;&quot;</span><span class="p">)</span> <span class="no">nil</span><span class="p">))</span>
-<span class="lineno">3</span> <span class="p">(</span><span class="nv">add-hook</span> <span class="ss">&#39;markdown-mode-hook</span> <span class="ss">&#39;markdown-unset-tab</span><span class="p">)</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3</pre></td><td class="code"><pre><span class="p">(</span><span class="nb">defun</span> <span class="nv">markdown-unset-tab</span> <span class="p">()</span>
+  <span class="p">(</span><span class="nv">define-key</span> <span class="nv">markdown-mode-map</span> <span class="p">(</span><span class="nv">kbd</span> <span class="s">"&lt;tab&gt;"</span><span class="p">)</span> <span class="no">nil</span><span class="p">))</span>
+<span class="p">(</span><span class="nv">add-hook</span> <span class="ss">'markdown-mode-hook</span> <span class="ss">'markdown-unset-tab</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <ul>
 <li>将yas/expand绑定到其他快捷键上</li>
 </ul>
 
 
-<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nv">global-set-key</span> <span class="p">(</span><span class="nv">kbd</span> <span class="s">&quot;C-;&quot;</span><span class="p">)</span> <span class="ss">&#39;yas/expand</span><span class="p">)</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1</pre></td><td class="code"><pre><span class="p">(</span><span class="nv">global-set-key</span> <span class="p">(</span><span class="nv">kbd</span> <span class="s">"C-;"</span><span class="p">)</span> <span class="ss">'yas/expand</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>考虑到markdown里用tab的次数还是挺多的，我采用的是第二种方法。</p>
 
@@ -254,27 +256,37 @@ $0
 
 <p>首先把路径去掉，扩展名去掉，通过manual可以查得有两个函数可以用，于是代码如下</p>
 
-<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nb">defun</span> <span class="nv">mfa/extract-file-name</span> <span class="p">(</span><span class="nv">file-name</span><span class="p">)</span>
-<span class="lineno">2</span>   <span class="p">(</span><span class="nv">file-name-nondirectory</span> <span class="p">(</span><span class="nv">file-name-sans-extension</span> <span class="nv">file-name</span><span class="p">)))</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2</pre></td><td class="code"><pre><span class="p">(</span><span class="nb">defun</span> <span class="nv">mfa/extract-file-name</span> <span class="p">(</span><span class="nv">file-name</span><span class="p">)</span>
+  <span class="p">(</span><span class="nv">file-name-nondirectory</span> <span class="p">(</span><span class="nv">file-name-sans-extension</span> <span class="nv">file-name</span><span class="p">)))</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>然后可以发现实际名称是把上一步得到的值，用<code>-</code>打散之后，去掉前3个，再用<code>-</code>合起来，手册可以查到有<code>concat</code>、<code>split-string</code>和<code>cdddr</code>（<code>cdr</code>的变形），但是没有查到类似python里的<code>join</code>的函数，只能自己写了</p>
 
-<div class="highlight"><pre><code class="cl"><span class="lineno"> 1</span> <span class="p">(</span><span class="nb">defun</span> <span class="nv">mfa/join</span> <span class="p">(</span><span class="nv">l</span> <span class="nv">separator</span><span class="p">)</span>
-<span class="lineno"> 2</span>   <span class="p">(</span><span class="nb">apply</span> <span class="ss">&#39;concat</span>
-<span class="lineno"> 3</span>          <span class="p">(</span><span class="nb">car</span> <span class="nv">l</span><span class="p">)</span>
-<span class="lineno"> 4</span>          <span class="p">(</span><span class="nb">mapcar</span> <span class="nf">#&#39;</span><span class="p">(</span><span class="k">lambda</span> <span class="p">(</span><span class="nv">str</span><span class="p">)</span> <span class="p">(</span><span class="nv">concat</span> <span class="nv">separator</span> <span class="nv">str</span><span class="p">))</span>
-<span class="lineno"> 5</span>                  <span class="p">(</span><span class="nb">cdr</span> <span class="nv">l</span><span class="p">))))</span>
-<span class="lineno"> 6</span> 
-<span class="lineno"> 7</span> <span class="p">(</span><span class="nb">defun</span> <span class="nv">mfa/remove-date</span> <span class="p">(</span><span class="nv">file-name</span><span class="p">)</span>
-<span class="lineno"> 8</span>   <span class="p">(</span><span class="nv">mfa/join</span> <span class="p">(</span><span class="nb">cdddr</span> <span class="p">(</span><span class="nv">split-string</span> <span class="nv">file-name</span> <span class="s">&quot;-&quot;</span><span class="p">))</span>
-<span class="lineno"> 9</span>             <span class="s">&quot;-&quot;</span><span class="p">))</span>
-<span class="lineno">10</span> 
-<span class="lineno">11</span> <span class="p">(</span><span class="nb">defun</span> <span class="nv">mfa/get-directory-from-bufname</span> <span class="p">(</span><span class="nv">file-name</span><span class="p">)</span>
-<span class="lineno">12</span>   <span class="p">(</span><span class="nv">mfa/remove-date</span> <span class="p">(</span><span class="nv">mfa/extract-file-name</span> <span class="nv">file-name</span><span class="p">)))</span>
-</code></pre></div>
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12</pre></td><td class="code"><pre><span class="p">(</span><span class="nb">defun</span> <span class="nv">mfa/join</span> <span class="p">(</span><span class="nv">l</span> <span class="nv">separator</span><span class="p">)</span>
+  <span class="p">(</span><span class="nb">apply</span> <span class="ss">'concat</span>
+         <span class="p">(</span><span class="nb">car</span> <span class="nv">l</span><span class="p">)</span>
+         <span class="p">(</span><span class="nb">mapcar</span> <span class="nf">#'</span><span class="p">(</span><span class="k">lambda</span> <span class="p">(</span><span class="nv">str</span><span class="p">)</span> <span class="p">(</span><span class="nv">concat</span> <span class="nv">separator</span> <span class="nv">str</span><span class="p">))</span>
+                 <span class="p">(</span><span class="nb">cdr</span> <span class="nv">l</span><span class="p">))))</span></p>
 
+<p><span class="p">(</span><span class="nb">defun</span> <span class="nv">mfa/remove-date</span> <span class="p">(</span><span class="nv">file-name</span><span class="p">)</span>
+  <span class="p">(</span><span class="nv">mfa/join</span> <span class="p">(</span><span class="nb">cdddr</span> <span class="p">(</span><span class="nv">split-string</span> <span class="nv">file-name</span> <span class="s">"-"</span><span class="p">))</span>
+            <span class="s">"-"</span><span class="p">))</span></p>
+
+<p><span class="p">(</span><span class="nb">defun</span> <span class="nv">mfa/get-directory-from-bufname</span> <span class="p">(</span><span class="nv">file-name</span><span class="p">)</span>
+  <span class="p">(</span><span class="nv">mfa/remove-date</span> <span class="p">(</span><span class="nv">mfa/extract-file-name</span> <span class="nv">file-name</span><span class="p">)))</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>稍微解释一下<code>mfa/join</code>（如果你懂一些lisp，以下内容可以跳过）：</p>
 
@@ -293,31 +305,34 @@ $0
 <p>要求一个文件列表，首先得知道文件的目录在哪，如果用绝对路径，这个目录是很好知道的，但是如果要保证跨平台性，只能使用相对路径，手册里查到一个函数<code>expand-file-name</code>可以完成相对路径展开到绝对路径的工作，
 然后可以发现从我当前的编辑目录<code>./_posts</code>到<code>./assets</code>需要向上走一级目录，所求的目录用elisp表达出来即</p>
 
-<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nb">defun</span> <span class="nv">mfa/get-images-directory</span> <span class="p">(</span><span class="nv">file-name</span><span class="p">)</span>
-<span class="lineno">2</span>   <span class="p">(</span><span class="nv">concat</span> <span class="p">(</span><span class="nv">file-name-as-directory</span> <span class="p">(</span><span class="nv">expand-file-name</span> <span class="s">&quot;&quot;</span> <span class="s">&quot;../assets/images/&quot;</span><span class="p">))</span>
-<span class="lineno">3</span>           <span class="p">(</span><span class="nv">mfa/get-directory-from-bufname</span> <span class="nv">file-name</span><span class="p">)))</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3</pre></td><td class="code"><pre><span class="p">(</span><span class="nb">defun</span> <span class="nv">mfa/get-images-directory</span> <span class="p">(</span><span class="nv">file-name</span><span class="p">)</span>
+  <span class="p">(</span><span class="nv">concat</span> <span class="p">(</span><span class="nv">file-name-as-directory</span> <span class="p">(</span><span class="nv">expand-file-name</span> <span class="s">""</span> <span class="s">"../assets/images/"</span><span class="p">))</span>
+          <span class="p">(</span><span class="nv">mfa/get-directory-from-bufname</span> <span class="nv">file-name</span><span class="p">)))</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>如果调用<code>(mfa/get-images-directory (buffer-file-name))</code>在我的电脑上可得返回值为<code>d:/workspace/blog-content/assets/images/emacs-summary-cont</code></p>
 
 <p>接下来就可以用<code>directory-files</code>求得某个目录下的文件列表了，而且<code>directory-files</code>有个参数<code>:match-regexp</code>用来guard文件名。注意：这个函数返回的文件列表里的元素是绝对路径的，而我们只需要文件名，所以需要用<code>mapcar</code>处理一下，代码如下</p>
 
-<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nb">defun</span> <span class="nv">mfa/list-image-files</span> <span class="p">(</span><span class="nb">directory</span><span class="p">)</span>
-<span class="lineno">2</span>   <span class="p">(</span><span class="nb">mapcar</span> <span class="ss">&#39;file-name-nondirectory</span>
-<span class="lineno">3</span>           <span class="p">(</span><span class="nv">directory-files</span> <span class="nb">directory</span>
-<span class="lineno">4</span>                            <span class="ss">:match-regexp</span> <span class="s">&quot;\\.\\(png\\|jpg\\|jpeg\\|gif\\)&quot;</span><span class="p">)))</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2
+3
+4</pre></td><td class="code"><pre><span class="p">(</span><span class="nb">defun</span> <span class="nv">mfa/list-image-files</span> <span class="p">(</span><span class="nb">directory</span><span class="p">)</span>
+  <span class="p">(</span><span class="nb">mapcar</span> <span class="ss">'file-name-nondirectory</span>
+          <span class="p">(</span><span class="nv">directory-files</span> <span class="nb">directory</span>
+                           <span class="ss">:match-regexp</span> <span class="s">"\.\(png\|jpg\|jpeg\|gif\)"</span><span class="p">)))</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>Emacs Lisp用的正则表达式的语法是posix风格的（与vim一样），熟悉perl风格的同学们可能会觉得很奇怪（比如括号要转义了才有分组的作用）。</p>
 
 <p>最后一步，弄一个函数把上面的函数拼起来，首先在脑袋里想好输入输出：输入是一个带绝对路径的文件名，输出是这个文件名对应的图片文件夹下的图片文件名列表。</p>
 
-<div class="highlight"><pre><code class="cl"><span class="lineno">1</span> <span class="p">(</span><span class="nb">defun</span> <span class="nv">mfa/yield-choices</span> <span class="p">(</span><span class="nv">file-name</span><span class="p">)</span>
-<span class="lineno">2</span>   <span class="p">(</span><span class="nv">mfa/list-image-files</span> <span class="p">(</span><span class="nv">mfa/get-images-directory</span> <span class="nv">file-name</span><span class="p">)))</span>
-</code></pre></div>
-
+<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+2</pre></td><td class="code"><pre><span class="p">(</span><span class="nb">defun</span> <span class="nv">mfa/yield-choices</span> <span class="p">(</span><span class="nv">file-name</span><span class="p">)</span>
+  <span class="p">(</span><span class="nv">mfa/list-image-files</span> <span class="p">(</span><span class="nv">mfa/get-images-directory</span> <span class="nv">file-name</span><span class="p">)))</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure></p>
 
 <p>这样一来，我们所有的elisp编码工作就完成了（可以看出来所有代码都是由函数拼起来的，这也是<a href="http://en.wikipedia.org/wiki/Functional_programming">函数式编程</a>的主要编码方式），可以把以上代码存入一个elisp文件中（注意，最后一行要写<code>(provide 'your-file-name)</code>），并在<code>.emacs</code>里配置一下，把这个文件像插件一样加载进来。</p>
 
@@ -361,13 +376,13 @@ $0
 <br/>
 <br/>
 <span>
-	<a  href="http://mad4alcohol.github.io/2012/07/31/emacs-summary/" class="pageNav"  >Previous</a>
+	<a  href="http://qwert42.github.io/2012/07/31/emacs-summary/" class="pageNav"  >Previous</a>
 	&nbsp;&nbsp;&nbsp;
-	<a  href="http://mad4alcohol.github.io/2012/09/02/summer-summary/" class="pageNav"  >Next</a>
+	<a  href="http://qwert42.github.io/2012/09/02/summer-summary/" class="pageNav"  >Next</a>
 </span>
 <hr>
 <span class="author">
-  <a href="http://mad4alcohol.github.com">陈</a>
+  <a href="http://mad4alcohol.github.com">qwert42</a>
 </span>
 <span class="time">
   /
@@ -402,12 +417,12 @@ $(function(){
     var url = false;
         if (e.which == 37 || e.which == 74) {  // Left arrow and J
             
-        url = 'http://mad4alcohol.github.io/2012/07/31/emacs-summary/';
+        url = 'http://qwert42.github.io/2012/07/31/emacs-summary/';
         
         }
         else if (e.which == 39 || e.which == 75) {  // Right arrow and K
             
-        url = 'http://mad4alcohol.github.io/2012/09/02/summer-summary/';
+        url = 'http://qwert42.github.io/2012/09/02/summer-summary/';
         
         }
         if (url) {
@@ -426,7 +441,7 @@ $(function(){
       </div>
 
     <footer>
-    <p><small>Powered by <a href="https://github.com/mojombo/jekyll">Jekyll</a> & <a href="http://pages.github.com">GitHub</a> | Copyright 2012 - 2013 by <a href="/about/">陈</a> | <span class="label label-info" id="timeSpan"></span></small></p>
+    <p><small>Powered by <a href="https://github.com/mojombo/jekyll">Jekyll</a> & <a href="http://pages.github.com">GitHub</a> | Copyright 2012 - 2016 by <a href="/about/">qwert42</a> | <span class="label label-info" id="timeSpan"></span></small></p>
     </footer>
 
     </div>
