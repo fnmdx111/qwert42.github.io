@@ -695,6 +695,100 @@
 
 <p><code>foldMap . foldMap</code>可以折叠两层嵌套的不同折子到一个幺半群（Monoid）上。</p>
 
+<h3>实现<code>toList :: Foldable f =&gt; f a -&gt; [a]</code></h3>
+
+<p>既然我们已经知道<code>[]</code>是一个幺半群，那么我们可以使用<code>foldMap</code>将<code>f</code>折叠为一个幺半群。已知<code>foldMap</code>的类型是：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">foldMap</span> <span class="o">::</span> <span class="p">(</span><span class="kt">Foldable</span> <span class="n">f</span><span class="p">,</span> <span class="kt">Monoid</span> <span class="n">m</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">m</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">m</span>
+
+<span class="n">toList</span> <span class="o">::</span> <span class="kt">Foldable</span> <span class="n">f</span> <span class="o">=&gt;</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="n">a</span><span class="p">]</span>
+<span class="n">toList</span> <span class="o">=</span> <span class="n">foldMap</span> <span class="n">pure</span>
+</code></pre></div>
+<h3>实现<code>concat</code>，<code>concatMap</code>，<code>and</code>，<code>or</code>，<code>any</code>，<code>all</code>，<code>sum</code>，<code>product</code>等函数，并弄明白如何联合使用折子与幺半群来优雅地实现它们</h3>
+
+<p>我们总是想优先使用<code>foldMap</code>，因为它需要的参数少（不需要初始值）。当发现<code>foldMap</code>对于给定的问题不合适之后才考虑<code>foldr</code>或者<code>foldl</code>以及他们的变体。</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">concat</span> <span class="o">::</span> <span class="kt">Foldable</span> <span class="n">f</span> <span class="o">=&gt;</span> <span class="n">f</span> <span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="n">a</span><span class="p">]</span>
+<span class="n">concat</span> <span class="o">=</span> <span class="n">foldMap</span> <span class="n">id</span>  <span class="c1">-- 因为f [a]里的[a]已经是一个Monoid了，所以直接id就行了</span>
+
+<span class="n">concatMap</span> <span class="o">::</span> <span class="kt">Foldable</span> <span class="n">f</span> <span class="o">=&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="n">b</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="n">b</span><span class="p">]</span>
+<span class="n">concatMap</span> <span class="o">=</span> <span class="n">foldMap</span>  <span class="c1">-- concatMap实际上是foldMap里Monoid m特化为[]的一个特殊情况</span>
+
+<span class="n">and</span> <span class="o">::</span> <span class="kt">Foldable</span> <span class="n">f</span> <span class="o">=&gt;</span> <span class="n">f</span> <span class="kt">Bool</span> <span class="o">-&gt;</span> <span class="kt">Bool</span>
+<span class="n">and</span> <span class="o">=</span> <span class="n">foldr</span> <span class="p">(</span><span class="o">&amp;&amp;</span><span class="p">)</span> <span class="kt">True</span>
+
+<span class="n">or</span> <span class="o">::</span> <span class="kt">Foldable</span> <span class="n">f</span> <span class="o">=&gt;</span> <span class="n">f</span> <span class="kt">Bool</span> <span class="o">-&gt;</span> <span class="kt">Bool</span>
+<span class="n">or</span> <span class="o">=</span> <span class="n">foldr</span> <span class="p">(</span><span class="o">||</span><span class="p">)</span> <span class="kt">False</span>
+</code></pre></div>
+<p><code>any</code>, <code>all</code>, <code>sum</code>, <code>product</code>这几个函数的特点是，它们操作的对象都可以在多种运算符和空值下构成幺半群，比如整数可以在<code>(+)</code>与0下构成一个幺半群，也可以在<code>(*)</code>与1下构成一个幺半群。所以如果我们使用<code>newtype</code>来构建新的类型，并实现它们的幺半群实例。这样就可以使用<code>foldMap</code>来优雅地实现上面说的函数了。（当然如果直接用<code>foldr</code>或者<code>foldl</code>也不是不可以。但是<code>newtype</code>出来的类型不光在这里有用，在别的地方也有可能用得到，所以这里我们用使用<code>newtype</code>的写法。）</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="kr">newtype</span> <span class="kt">Any</span> <span class="o">=</span> <span class="kt">Any</span> <span class="p">{</span> <span class="n">getAny</span> <span class="o">::</span> <span class="kt">Bool</span> <span class="p">}</span>
+
+<span class="kr">instance</span> <span class="kt">Monoid</span> <span class="kt">Any</span> <span class="kr">where</span>
+  <span class="n">mempty</span> <span class="o">=</span> <span class="kt">Any</span> <span class="kt">False</span>
+  <span class="kt">Any</span> <span class="n">a</span> <span class="p">`</span><span class="n">mappend</span><span class="p">`</span> <span class="kt">Any</span> <span class="n">b</span> <span class="o">=</span> <span class="kt">Any</span> <span class="o">$</span> <span class="n">a</span> <span class="o">||</span> <span class="n">b</span>
+
+<span class="n">any</span> <span class="o">::</span> <span class="kt">Foldable</span> <span class="n">f</span> <span class="o">=&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="kt">Bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="kt">Bool</span>
+<span class="n">any</span> <span class="n">f</span> <span class="o">=</span> <span class="n">getAny</span> <span class="o">.</span> <span class="n">foldMap</span> <span class="p">(</span><span class="kt">Any</span> <span class="o">.</span> <span class="n">f</span><span class="p">)</span>
+
+
+<span class="kr">newtype</span> <span class="kt">All</span> <span class="o">=</span> <span class="kt">All</span> <span class="p">{</span> <span class="n">getAll</span> <span class="o">::</span> <span class="kt">Bool</span> <span class="p">}</span>
+
+<span class="kr">instance</span> <span class="kt">Monoid</span> <span class="kt">All</span> <span class="kr">where</span>
+  <span class="n">mempty</span> <span class="o">=</span> <span class="kt">All</span> <span class="kt">True</span>
+  <span class="kt">All</span> <span class="n">a</span> <span class="p">`</span><span class="n">mappend</span><span class="p">`</span> <span class="kt">All</span> <span class="n">b</span> <span class="o">=</span> <span class="kt">All</span> <span class="o">$</span> <span class="n">a</span> <span class="o">&amp;&amp;</span> <span class="n">b</span>
+
+<span class="n">all</span> <span class="o">::</span> <span class="kt">Foldable</span> <span class="n">f</span> <span class="o">=&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="kt">Bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="kt">Bool</span>
+<span class="n">all</span> <span class="n">f</span> <span class="o">=</span> <span class="n">getAll</span> <span class="o">.</span> <span class="n">foldMap</span> <span class="p">(</span><span class="kt">All</span> <span class="o">.</span> <span class="n">f</span><span class="p">)</span>
+
+<span class="kr">newtype</span> <span class="kt">Sum</span> <span class="n">a</span> <span class="o">=</span> <span class="kt">Sum</span> <span class="p">{</span> <span class="n">getSum</span> <span class="o">::</span> <span class="n">a</span> <span class="p">}</span>
+
+<span class="kr">instance</span> <span class="kt">Num</span> <span class="n">a</span> <span class="o">=&gt;</span> <span class="kt">Monoid</span> <span class="p">(</span><span class="kt">Sum</span> <span class="n">a</span><span class="p">)</span> <span class="kr">where</span>
+  <span class="n">mempty</span> <span class="o">=</span> <span class="kt">Sum</span> <span class="mi">0</span>
+  <span class="kt">Sum</span> <span class="n">a</span> <span class="p">`</span><span class="n">mappend</span><span class="p">`</span> <span class="kt">Sum</span> <span class="n">b</span> <span class="o">=</span> <span class="kt">Sum</span> <span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span>
+
+<span class="n">sum</span> <span class="o">::</span> <span class="p">(</span><span class="kt">Num</span> <span class="n">a</span><span class="p">,</span> <span class="kt">Foldable</span> <span class="n">f</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">a</span>
+<span class="n">sum</span> <span class="o">=</span> <span class="n">getSum</span> <span class="o">.</span> <span class="n">foldMap</span> <span class="kt">Sum</span>
+
+<span class="c1">-- product不再赘述</span>
+</code></pre></div>
+<p>接下来看看<code>maximumBy</code>的类型：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">maximumBy</span> <span class="o">::</span> <span class="kt">Foldable</span> <span class="n">f</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="kt">Ordering</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">a</span>
+</code></pre></div>
+<p>我们已经知道<code>Ordering</code>是一个幺半群了，看到幺半群就会自然地想到使用<code>foldMap</code>，然而<code>foldMap</code>中计算出来的幺半群就是它的结果，但是<code>maximumBy</code>的结果却不是一个幺半群。所以这里使用<code>foldMap</code>可能不太好。我们使用<code>foldr1</code>来实现它，因为<code>foldr1</code>是<code>foldr</code>的特化版本，它不需要使用者提供初始值。</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">maximumBy</span> <span class="n">f</span> <span class="o">=</span> <span class="n">foldr1</span> <span class="p">(</span><span class="nf">\</span><span class="n">x</span> <span class="n">acc</span> <span class="o">-&gt;</span> <span class="kr">case</span> <span class="n">f</span> <span class="n">x</span> <span class="n">acc</span> <span class="kr">of</span>
+                         <span class="kt">LT</span> <span class="o">-&gt;</span> <span class="n">acc</span>
+                         <span class="kt">EQ</span> <span class="o">-&gt;</span> <span class="n">acc</span>
+                         <span class="kt">GT</span> <span class="o">-&gt;</span> <span class="n">x</span><span class="p">)</span>
+</code></pre></div>
+<p><code>elem x xs</code>返回一个<code>Bool</code>。当<code>xs</code>中至少有一个<code>x</code>时，它返回<code>True</code>，否则返回<code>False</code>。这让我们联想到构造一个这样的函数<code>\a -&gt; a == x</code>并使用<code>or</code>。然而<code>or</code>需要的是<code>f Bool</code>，这里仅仅保证了<code>f</code>是一个折子，并不保证它是一个函子，所以我们无法将<code>f a</code>映射至<code>f Bool</code>。（你当然可以<code>or $ map (== x) (toList xs)</code>，但是我们有更好的方法。）</p>
+
+<p>换个思路：当<code>xs</code>中至少有一个<code>x</code>时，这句话也就是<code>xs</code>中的任意一个元素等于<code>x</code>时，也就是说我们可以使用<code>any</code>！</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">elem</span> <span class="o">::</span> <span class="p">(</span><span class="kt">Eq</span> <span class="n">a</span><span class="p">,</span> <span class="kt">Foldable</span> <span class="n">f</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="kt">Bool</span>
+<span class="n">elem</span> <span class="n">x</span> <span class="o">=</span> <span class="n">any</span> <span class="p">(</span><span class="o">==</span> <span class="n">x</span><span class="p">)</span>
+
+<span class="c1">-- 源码中的实现更简单 elem = any . (==)</span>
+</code></pre></div>
+<p><code>find</code>的返回值类型是<code>Maybe a</code>，当且仅当<code>a</code>是一个幺半群的时候<code>Maybe a</code>是一个幺半群。然而<code>find</code>的类型约束并不保证<code>a</code>是一个幺半群。所以这里我们尝试使用<code>foldr</code>，并且从<code>Nothing</code>开始折叠。</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">find</span> <span class="o">::</span> <span class="kt">Foldable</span> <span class="n">f</span> <span class="o">=&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="kt">Bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="kt">Maybe</span> <span class="n">a</span>
+<span class="n">find</span> <span class="n">pred</span> <span class="o">=</span> <span class="n">foldr</span> <span class="p">(</span><span class="nf">\</span><span class="n">x</span> <span class="n">acc</span> <span class="o">-&gt;</span> <span class="kr">if</span> <span class="n">pred</span> <span class="n">x</span> <span class="kr">then</span> <span class="kt">Just</span> <span class="n">x</span> <span class="kr">else</span> <span class="n">acc</span><span class="p">)</span> <span class="kt">Nothing</span>
+</code></pre></div>
+<p>这个实现会遍历所有可能的元素，返回最后一个遍历到的符合条件的元素。</p>
+
+<p>源码中利用了一个叫<code>First a :: { getFirst :: Maybe a }</code>的幺半群结构。这个结构说在<code>mappend</code>的时候，如果左边的<code>First</code>的值是Nothing，那么它的结果是<code>mappend</code>右边的值，否则这个<code>mappend</code>结果是左边的值。也就是说，如果利用这个幺半群与<code>foldMap</code>，我们可以返回第一个符合条件的元素（虽然不一定会在那个时候就返回）：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">find</span> <span class="n">pred</span> <span class="o">=</span> <span class="n">getFirst</span> <span class="o">.</span> <span class="n">foldMap</span> <span class="o">$</span> <span class="nf">\</span><span class="n">x</span> <span class="o">-&gt;</span> <span class="kt">First</span> <span class="p">(</span><span class="kr">if</span> <span class="n">pred</span> <span class="n">x</span> <span class="kr">then</span> <span class="kt">Just</span> <span class="n">x</span> <span class="kr">else</span> <span class="kt">Nothing</span><span class="p">)</span>
+</code></pre></div>
+<h2>Traversable 遍子(?)</h2>
+
+<h3>至少有两种自然的方式把一个由<code>[]</code>组成的树转换为一个由树组成的<code>[]</code>，它们是哪两种？</h3>
+
+<p>参照<code>[]</code>的两种意义：一种代表不确定的计算结果，一种代表并列的、有序的数据（即<code>ZipList</code>）。</p>
+
+<p>如果树里的每一个节点上的<code>[]</code>代表的时候不确定的结算结果，那么我们可以将这个树展开，每个节点上的<code>[]</code>里的一个元素代表在这个节点的可能的元素，我们会得到<strong>很多</strong>树（类似集合的笛卡尔乘积）。</p>
+
+<p>另一种则是，把每个节点的<code>[]</code>的第一个元素拿出来组成一个树，每个节点的第二个元素拿出来组成一个树，以此类推。我们可以得到<code>minimum . toList tree</code>个树。</p>
+
+<h3>给出一种将由树组成的<code>[]</code>转换成由<code>[]</code>组成的树的方法</h3>
+
+<p>可以将列表里的树按照坐标zip起来。</p>
+
 </section>
 <section class="meta">
 
