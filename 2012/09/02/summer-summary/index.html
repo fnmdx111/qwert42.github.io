@@ -76,7 +76,8 @@
 
 <p>还没考完试就被一个密码学的老师邀请去做东西，这是<em>第二次</em>跟着这个老师了，第一次退出是因为，做出来第一个小东西之后，就给我了一个<em>在我看来</em>很专业的东西，被吓尿，然后就发了封邮件，说打算以后有基础了再弄。这次也是没搞几天就退了。哎，弄的东西实在是提不起兴趣，而且用的尽是我不喜欢的技术（<a href="http://www.cplusplus.com/">洗屁屁</a>和<a href="http://www.java.com/">假娃</a>什么的），跟我最开始想去实验室干活的目的不一样。不过这次我也学到了两件事：</p>
 
-<blockquote><ul>
+<blockquote>
+<ul>
 <li>一是实验室永远用的都不会去用小众的东西，C就不说了，这货暂时还是不可替代的，cpp/java/c#可以说是大行其道，所以<strong>永远不要</strong>抱着<strong>试试Scala，Clojure之类的东西在实战中是个什么样子</strong>这种心态去找实验室，这是<strong>不可能</strong>的！想玩这些东西，呵呵，自己家里鼓捣鼓捣就算了吧。</li>
 <li>二是写任何东西，不可能做到<strong><font color="red">不去了解背景知识就能完成</font></strong>的。</li>
 </ul>
@@ -94,13 +95,14 @@
 
 <p>是写了一个<a href="https://github.com/mad4alcohol/LaborHourInputter">工票录入系统</a>，目的是加快工票的输入（原来是直接在写好的excel表格里输入工时之类的数据），所以根据用户需求，用才熟悉起来的pyqt弄了一个专门输入工票的界面。一直到现在都很简单，一天完事。这之后用户又有需求了：写出到excel之前，要用现在已有的数据算出工人的绩效，然后再跟工时废品之类的数据一起写到给定的excel的sheet里。这个工作，根据跨平台的原则，当然是首先考虑pypi里的可以跨平台的东西，所以看起来是可以用<a href="http://sourceforge.net/projects/pyexcelerator/">pyExcelerator</a>或者<a href="http://pypi.python.org/pypi/xlutils">xlutils</a>这种东西来弄的，但是经过实践</p>
 
-<blockquote><ul>
+<blockquote>
+<ul>
 <li>用pyExcelerator写入的话，所有格子的style消失，所有公式消失，基本可以说废掉了</li>
 <li>用xlutils的话，压根就写入不了（可能是操作有误吧）</li>
 </ul>
 </blockquote>
 
-<p>最后只能去试试用<a href="http://sourceforge.net/projects/pywin32/">pywin32</a>的win32com模块了，随便去搜了搜，看起来好像很复杂，但是仔细看了一下某个邮件列表的某个邮件存档（链接已经忘了），发现用COM去操作excel还是挺简单的，直接定位之后给<code>Value</code>属性赋值就行了，然后设置style就是直接给<code>Style</code>属性赋值，比如<code>cell.Style = 'Percent'</code>（如果设置<code>xl_app.Visible = True</code>会有很有意思的事情发生）。摸清楚之后，剩下工作的工期缩短了500%（预期是十几天断断续续地弄）。收获也还是有的，熟悉了一下数据库之类的东西，但是因为用的是<a href="http://www.sqlalchemy.org/">SQLAlchemy</a>，所以很不熟悉底层的操作（比如sql语句什么的），这也导致数据库那块的效率略低，然后稍微用了一下 <a href="http://pypi.python.org/pypi/xlrd">xlrd</a>去读存在表格里的工人信息，然后实践了一下抽象类之类的东西，目前感觉继承还是只是一种消除重复的机制，并没有那么神奇或者不可捉摸。反正目前我发现的办法就是，先写两个需要用的类出来（没有两个以及以上类似的类就暂时不需要抽象类对吧？），然后<em>并排打开</em>，从<strong>字面上</strong>提取出重复，放到一个抽象类里去，然后去掉这两个类的重复部分。</p>
+<p>最后只能去试试用<a href="http://sourceforge.net/projects/pywin32/">pywin32</a>的win32com模块了，随便去搜了搜，看起来好像很复杂，但是仔细看了一下某个邮件列表的某个邮件存档（链接已经忘了），发现用COM去操作excel还是挺简单的，直接定位之后给<code>Value</code>属性赋值就行了，然后设置style就是直接给<code>Style</code>属性赋值，比如<code>cell.Style = &#39;Percent&#39;</code>（如果设置<code>xl_app.Visible = True</code>会有很有意思的事情发生）。摸清楚之后，剩下工作的工期缩短了500%（预期是十几天断断续续地弄）。收获也还是有的，熟悉了一下数据库之类的东西，但是因为用的是<a href="http://www.sqlalchemy.org/">SQLAlchemy</a>，所以很不熟悉底层的操作（比如sql语句什么的），这也导致数据库那块的效率略低，然后稍微用了一下 <a href="http://pypi.python.org/pypi/xlrd">xlrd</a>去读存在表格里的工人信息，然后实践了一下抽象类之类的东西，目前感觉继承还是只是一种消除重复的机制，并没有那么神奇或者不可捉摸。反正目前我发现的办法就是，先写两个需要用的类出来（没有两个以及以上类似的类就暂时不需要抽象类对吧？），然后<em>并排打开</em>，从<strong>字面上</strong>提取出重复，放到一个抽象类里去，然后去掉这两个类的重复部分。</p>
 
 <p>另外考虑到用户的<em>非</em>专业人员的属性，为每个项目入口点（比如输入界面和输出到表格）做了一个batch文件（给安装也做了一个脚本，静默安装python，安装distribute库，安装pip，安装xlrd和sqlalchemy，最后是安装pyqt和pywin32，基本上是全自动，除了最后两个需要手动点几下Next，因为实在是没找到可以用的静默参数是啥）。</p>
 

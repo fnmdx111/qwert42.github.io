@@ -82,7 +82,7 @@
 
 <p>这里主要用例子来介绍<a href="http://qt-project.org/doc/qt-4.8/qabstracttablemodel.html">QAbstractTableModel</a>，<a href="http://qt-project.org/doc/qt-4.8/qabstractlistmodel.html">QAbstractListModel</a>的使用方法很类似。</p>
 
-<p>例子来自于（操蛋的）<a href="https://github.com/mad4alcohol/os-experiments">操作系统实习</a>，最终实现效果如图 <img src="/assets/images/pyqt-model-view-framework/overview.png" alt="overview.png" /></p>
+<p>例子来自于（操蛋的）<a href="https://github.com/mad4alcohol/os-experiments">操作系统实习</a>，最终实现效果如图 <img src="/assets/images/pyqt-model-view-framework/overview.png" alt="overview.png"></p>
 
 <p>说下每个地方是干什么的。用户首先输入进程名和大小，点添加之后会在上面的列表控件里面添加一项，用来显示进程相关的信息。同时会为这个进程创造一个页表对象（见源码的PageTable类），由于一个进程对应一个页表，也就是说会有多个页表对象，那么在选中上面的列表中的项目的时候，下面的页表列表控件也要切换到相应的PageTable对象上去。用户可以选择任意的页面然后点击释放按钮来释放页面。对应地，内存空间在变化的时候，位示图（图中右边的那个Table控件）也要变化。</p>
 
@@ -96,14 +96,12 @@
 <li>位示图控件要能根据空间的变化而变化</li>
 </ul>
 
-
 <p>经过（很长时间的）文档翻阅，初步得出一些思路</p>
 
 <ul>
 <li>列表控件的变化利用model的<a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#beginInsertRows"><code>beginInsertRows()</code></a>，<a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#endInsertRows"><code>endInsertRows()</code></a>等来实现</li>
 <li>数据的修改可以直接在自定义的model中内置的数据存储中修改</li>
 </ul>
-
 
 <h2>自定义一个Model</h2>
 
@@ -113,67 +111,61 @@
 <li><code>__init__</code></li>
 </ul>
 
-
-<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
 2
 3
 4
 5
 6
 7
-8</pre></td><td class="code"><pre><span class="k">def</span> <span class="nf"><strong>init</strong></span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
-    <span class="nb">super</span><span class="p">(</span><span class="n">ProcessModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n"><strong>init</strong></span><span class="p">(</span><span class="n">parent</span><span class="p">)</span></p>
+8</pre></td><td class="code"><pre><span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
+    <span class="nb">super</span><span class="p">(</span><span class="n">ProcessModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
 
-<pre><code>&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;_parent&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;parent&lt;/span&gt;
-&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;_proc_list&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;defaultdict&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;int&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span> <span class="o">=</span> <span class="n">parent</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_proc_list</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 
-&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;headers&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s"&gt;u'进程名'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;u'已分配 (kB)'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
-&lt;span class="w"&gt;
-</code></pre>
-
-<p></span></pre></td></tr></tbody></table></code></pre></figure></p>
+    <span class="bp">self</span><span class="o">.</span><span class="n">headers</span> <span class="o">=</span> <span class="p">[</span><span class="s">u'进程名'</span><span class="p">,</span> <span class="s">u'已分配 (kB)'</span><span class="p">]</span>
+    <span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure>
 
 <ul>
 <li><a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#rowCount"><code>rowCount()</code></a>用来定义列表项的个数</li>
 </ul>
 
-
-<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
 2
 3</pre></td><td class="code"><pre><span class="k">def</span> <span class="nf">rowCount</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_proc_list</span><span class="p">)</span>
     <span class="w">
-</span></pre></td></tr></tbody></table></code></pre></figure></p>
+</span></pre></td></tr></tbody></table></code></pre></figure>
 
 <ul>
 <li><a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#columnCount"><code>columnCount()</code></a>用来定义列数，这里我们只有两列，所以返回定值</li>
 </ul>
 
-
-<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
 2
 3</pre></td><td class="code"><pre><span class="k">def</span> <span class="nf">columnCount</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="k">return</span> <span class="mi">2</span>
     <span class="w">
-</span></pre></td></tr></tbody></table></code></pre></figure></p>
+</span></pre></td></tr></tbody></table></code></pre></figure>
 
 <ul>
 <li><a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#data"><code>data()</code></a>用来根据给定的index和role来返回数据</li>
 </ul>
-
 
 <p>以下简要的来说一下role是个什么东西。</p>
 
 <p>在model/view框架中，role就跟它自己的名字表示的意思一样，是用来控制data表示的是什么东西的，比如给定某index和<code>role=Qt.DisplayRole</code>来调用[<code>data</code>][]，那么返回的数据就是用来显示这个index表示的位置上的内容的。
 如果给定某index和<code>role=Qt.TextAlignmentRole</code>来调用[<code>data</code>][]，那么返回的数据就是用来控制这个index表示的位置上的内容的文字对齐方向的。
 用户也可以自己定义一些role，从Qt.UserRole开始，每次加1就表示一个新role，同时在delegate中也要控制对应的role。
-像这样的role还有很多，具体可见 <a href="http://qt-project.org/doc/qt-4.8/qt.html#ItemDataRole-enum">文档</a> 。</p>
+像这样的role还有很多，具体可见 <a href="http://qt-project.org/doc/qt-4.8/qt.html#ItemDataRole-enum">文档</a> 。 </p>
 
 <p>这里不得不说一下pyqt的实现细节，由于重载的是Qt对象的方法，所以data的返回值最好是Qt内置的数据类型，比如<a href="http://qt-project.org/doc/qt-4.8/qstring.html">QString</a>之类的，一般来说，属于python的数据类型在返回前是用<a href="http://qt-project.org/doc/qt-4.8/qvariant.html">QVariant</a>包起来的，在实际使用的时候解包也很简单，调用<a href="http://pyqt.sourceforge.net/Docs/PyQt4/pyqt_qvariant.html"><code>toPyObject()</code></a>即可。</p>
 
 <p>所以<a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#data"><code>data()</code></a>的主要代码就是</p>
 
-<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
 2
 3
 4
@@ -190,8 +182,8 @@
 15
 16
 17
-18</pre></td><td class="code"><pre><span class="n">proc_name</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n"><em>proc_list</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="n">row</span><span class="p">]</span>
-<span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n"></em>proc_list</span><span class="p">[</span><span class="n">proc_name</span><span class="p">]</span>
+18</pre></td><td class="code"><pre><span class="n">proc_name</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_proc_list</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="n">row</span><span class="p">]</span>
+<span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proc_list</span><span class="p">[</span><span class="n">proc_name</span><span class="p">]</span>
 <span class="k">if</span> <span class="n">role</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">TextAlignmentRole</span><span class="p">:</span>
     <span class="k">if</span> <span class="n">col</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">Qt</span><span class="o">.</span><span class="n">AlignLeft</span> <span class="o">|</span> <span class="n">Qt</span><span class="o">.</span><span class="n">AlignVCenter</span>
@@ -208,11 +200,11 @@
 <span class="k">elif</span> <span class="n">role</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">UserRole</span><span class="p">:</span>
     <span class="k">return</span> <span class="n">proc_name</span>
 <span class="k">return</span> <span class="n">QVariant</span><span class="p">()</span><span class="w">
-</span></pre></td></tr></tbody></table></code></pre></figure></p>
+</span></pre></td></tr></tbody></table></code></pre></figure>
 
 <p>当然还有一些boilerplate</p>
 
-<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
 2
 3
 4
@@ -221,16 +213,16 @@
     <span class="ow">or</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">row</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">rowCount</span><span class="p">())</span> \
     <span class="ow">or</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">col</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">columnCount</span><span class="p">()):</span>
     <span class="k">return</span> <span class="n">QVariant</span><span class="p">()</span><span class="w">
-</span></pre></td></tr></tbody></table></code></pre></figure></p>
+</span></pre></td></tr></tbody></table></code></pre></figure>
 
 <p>还有一些非必要的方法，比如用来提供header数据的类似data的方法<a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#headerData"><code>headerData()</code></a></p>
 
-<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
 2
 3</pre></td><td class="code"><pre><span class="k">def</span> <span class="nf">headerData</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">orientation</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="n">Qt</span><span class="o">.</span><span class="n">DisplayRole</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">role</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">DisplayRole</span> <span class="ow">and</span> <span class="n">orientation</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">Horizontal</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="n">section</span><span class="p">]</span><span class="w">
-</span></pre></td></tr></tbody></table></code></pre></figure></p>
+</span></pre></td></tr></tbody></table></code></pre></figure>
 
 <p>然后说说怎么合法地对model的数据做修改，根据文档中Resizable models的一节里说的，插入新数据前必须调用<a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#beginInsertRows"><code>beginInsertRows()</code></a>，插入结束后必须调用<a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#endInsertRows"><code>endInsertRows()</code></a>，同样，删除数据前必须调用<a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#beginRemoveRows"><code>beginRemoveRows()</code></a>，删除结束后必须调用<a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#endRemoveRows"><code>endRemoveRows()</code></a>，如果不这么做，根据实验，view中不会有变化。（对列的变化应该是一样的，但是我们这个例子中并不涉及到对列的修改，所以在此略去）。如果列表项的数量没有增加或者减少，只是内容改变了，则需要发射<a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#dataChanged"><code>dataChanged(QModelIndex, QModelIndex)</code></a>信号。根据我的实验，发射信号带的参数只需要是两个空的<a href="http://qt-project.org/doc/qt-4.8/qmodelindex.html"><code>QModelIndex()</code></a>就行了，可能数据量大了之后，指明范围会比较好。</p>
 
@@ -244,7 +236,7 @@
 
 <p>为了实现这种genuine的带列的列表，我们只能选<a href="http://qt-project.org/doc/qt-4.8/qtreeview.html">QTreeView</a>了，<a href="http://qt-project.org/doc/qt-4.8/qtableview.html">QTableView</a>我试过，效果并不好，然后<a href="http://qt-project.org/doc/qt-4.8/qlistview.html">QListView</a>是压根就不能带列，<a href="http://qt-project.org/doc/qt-4.8/qcolumnview.html">QColumnView</a>就更不明觉厉了。</p>
 
-<p>生的<a href="http://qt-project.org/doc/qt-4.8/qtreeview.html">QTreeView</a>看起来是这样的 <img src="/assets/images/pyqt-model-view-framework/raw-treeview.png" alt="raw-treeview.png" />为了让它变熟，得先用<a href="http://qt-project.org/doc/qt-4.8/qtreeview.html#rootIsDecorated-prop"><code>setRootIsDecorated()</code></a>去掉左边的树形图用的线，然后用<a href="http://qt-project.org/doc/qt-4.8/qtreeview.html#itemsExpandable-prop"><code>setItemsExpandable()</code></a>让项目不能展开。变成这样 <img src="/assets/images/pyqt-model-view-framework/usable-treeview.png" alt="usable-treeview.png" /></p>
+<p>生的<a href="http://qt-project.org/doc/qt-4.8/qtreeview.html">QTreeView</a>看起来是这样的 <img src="/assets/images/pyqt-model-view-framework/raw-treeview.png" alt="raw-treeview.png">为了让它变熟，得先用<a href="http://qt-project.org/doc/qt-4.8/qtreeview.html#rootIsDecorated-prop"><code>setRootIsDecorated()</code></a>去掉左边的树形图用的线，然后用<a href="http://qt-project.org/doc/qt-4.8/qtreeview.html#itemsExpandable-prop"><code>setItemsExpandable()</code></a>让项目不能展开。变成这样 <img src="/assets/images/pyqt-model-view-framework/usable-treeview.png" alt="usable-treeview.png"></p>
 
 <p>接下来调用<a href="http://qt-project.org/doc/qt-4.8/qabstractitemview.html#setModel"><code>setModel()</code></a>来设置view使用的model对象。虽然是<a href="http://qt-project.org/doc/qt-4.8/qtreeview.html">QTreeView</a>，但是它仍然支持<a href="http://qt-project.org/doc/qt-4.8/qabstracttablemodel.html">QAbstractTableModel</a>。你也可以把这个model应用到<a href="http://qt-project.org/doc/qt-4.8/qtableview.html">QTableView</a>上，看看展示效果上的区别。</p>
 
@@ -254,35 +246,35 @@
 
 <p>向进程列表中添加进程项目，首先要调用model的<a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#beginInsertRows"><code>beginInsertRows()</code></a>，然后修改数据来源（比如我们这里是个内置的<a href="http://docs.python.org/2/library/collections.html#collections.defaultdict">defaultdict</a>），修改完毕之后调用<a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#endInsertRows"><code>endInsertRows()</code></a>。</p>
 
-<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
 2
 3</pre></td><td class="code"><pre><span class="bp">self</span><span class="o">.</span><span class="n">beginInsertRows</span><span class="p">(</span><span class="n">QModelIndex</span><span class="p">(),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 <span class="bp">self</span><span class="o">.</span><span class="n">_proc_list</span><span class="p">[</span><span class="n">proc_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">size</span>
 <span class="bp">self</span><span class="o">.</span><span class="n">endInsertRows</span><span class="p">()</span><span class="w">
-</span></pre></td></tr></tbody></table></code></pre></figure></p>
+</span></pre></td></tr></tbody></table></code></pre></figure>
 
 <p>其中调用<a href="http://qt-project.org/doc/qt-4.8/qabstractitemmodel.html#beginInsertRows"><code>beginInsertRows()</code></a>的时候用到的参数是<code>index, start, end</code>，这里为了简单，取了一些定值，对实际效果（好像）也没什么影响。
 删除项目也是差不多了，这里不再赘述。</p>
 
 <p>为了显示每个进程的对应列表，必须知道在进程列表中，当前选中的是哪一项。在<a href="http://qt-project.org/doc/qt-4.8/qabstractitemview.html">QAbstractItemView</a>里有一个方法<a href="http://qt-project.org/doc/qt-4.8/qabstractitemview.html#selectionModel"><code>selectionModel()</code></a>可以拿到这个view的<a href="http://qt-project.org/doc/qt-4.8/qitemselectionmodel.html">QItemSelectionModel</a>，它管理这个view关于<em>选择</em>的一切信息。可以同过它拿到被选中的行、列，或者判断是否有行或列被选中（具体方法参见<a href="http://qt-project.org/doc/qt-4.8/qitemselectionmodel.html">文档</a>。这里我们要用的是它的<a href="http://qt-project.org/doc/qt-4.8/qitemselectionmodel.html#currentRowChanged"><code>currentRowChanged()</code></a>信号。</p>
 
-<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
 2
 3</pre></td><td class="code"><pre><span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">proc_list_view</span><span class="o">.</span><span class="n">selectionModel</span><span class="p">(),</span>
              <span class="n">SIGNAL</span><span class="p">(</span><span class="s">'currentRowChanged(QModelIndex, QModelIndex)'</span><span class="p">),</span>
              <span class="bp">self</span><span class="o">.</span><span class="n">switch_page_table_model</span><span class="p">)</span><span class="w">
-</span></pre></td></tr></tbody></table></code></pre></figure></p>
+</span></pre></td></tr></tbody></table></code></pre></figure>
 
 <p>然后是这个信号连接到的槽的代码</p>
 
-<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
 2
 3
 4</pre></td><td class="code"><pre><span class="k">def</span> <span class="nf">switch_page_table_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">_</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="n">proc_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_model</span><span class="o">.</span><span class="n">data</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="n">Qt</span><span class="o">.</span><span class="n">UserRole</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">current_proc_name</span> <span class="o">=</span> <span class="n">proc_name</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">page_table_view</span><span class="o">.</span><span class="n">setModel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">page_table_models</span><span class="p">[</span><span class="n">proc_name</span><span class="p">])</span><span class="w">
-</span></pre></td></tr></tbody></table></code></pre></figure></p>
+</span></pre></td></tr></tbody></table></code></pre></figure>
 
 <p>我维护了一个<a href="http://docs.python.org/2/library/collections.html#collections.defaultdict">defaultdict</a>，进程名做键，PageTableModel作为值，这个函数首先通过index拿到这个index对应的进程名<code>proc_name</code>，然后用<a href="http://qt-project.org/doc/qt-4.8/qabstractitemview.html#setModel"><code>setModel()</code></a>方法切换<code>self.page_table_view</code>使用的model。实现起来还是比较简单的。</p>
 
@@ -290,7 +282,7 @@
 
 <p>示例代码</p>
 
-<p><figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
 2
 3
 4
@@ -307,7 +299,7 @@
 <span class="c"># 因为只有在设置了model之后view才会生成自己的selectionModel</span>
 <span class="c"># 如果在setModel之前设置，python会崩溃</span>
 <span class="n">view2</span><span class="o">.</span><span class="n">setSelectionModel</span><span class="p">(</span><span class="n">view1</span><span class="o">.</span><span class="n">selectionModel</span><span class="p">())</span><span class="w">
-</span></pre></td></tr></tbody></table></code></pre></figure></p>
+</span></pre></td></tr></tbody></table></code></pre></figure>
 
 <h2>关于delegate</h2>
 

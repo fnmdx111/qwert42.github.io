@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="author" content="qwert42" />
+    <title>Solutions to exercises in Typeclassopedia | qwert42</title>
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link href="/feed/" rel="alternate" title="qwert42" type="application/atom+xml" />
+    <link rel="stylesheet" href="/media/css/style.css">
+    <link rel="stylesheet" href="/media/css/highlight.css">
+    <script type="text/javascript" src="/media/js/jquery-1.7.1.min.js"></script>
+    <script type="text/javascript" src="/media/js/outliner.js"></script>
+  </head>
+  <script type="text/javascript">
+    function setTimeSpan(){
+    	var date = new Date();
+    	timeSpan.innerText=date.format('yyyy-MM-dd hh:mm:ss');
+    }
+    
+    Date.prototype.format = function(format)
+		{
+    var o =
+    	{
+    	    "M+" : this.getMonth()+1, //month
+    	    "d+" : this.getDate(),    //day
+    	    "h+" : this.getHours(),   //hour
+    	    "m+" : this.getMinutes(), //minute
+    	    "s+" : this.getSeconds(), //second
+    	    "q+" : Math.floor((this.getMonth()+3)/3),  //quarter
+    	    "S" : this.getMilliseconds() //millisecond
+    	}
+    	if(/(y+)/.test(format))
+    	format=format.replace(RegExp.$1,(this.getFullYear()+"").substr(4 - RegExp.$1.length));
+    	for(var k in o)
+    	if(new RegExp("("+ k +")").test(format))
+    	format = format.replace(RegExp.$1,RegExp.$1.length==1 ? o[k] : ("00"+ o[k]).substr((""+ o[k]).length));
+    	return format;
+		}
+  </script>
+  <body onLoad="setInterval(setTimeSpan,1000);">
+    <div id="container">
+      <div id="main" role="main">
+        <header>
+        <h1>Solutions to exercises in Typeclassopedia</h1>
+        </header>
+        <nav id="real_nav">
+        <span><a title="home page" class="" href="/">Home</a></span>
+        <span><a title="about" class="" href="/about/">About</a></span>
+        <span><a title="categories" class="" href="/categories/">Categories</a></span>
+        <span><a title="tags" class="" href="/tags/">Tags</a></span>
+        <!--<span><a title="links" class="" href="/links/">Links</a></span> -->
+        </nav>
+        <article class="content">
+        <section class="post">
+
+<span class="categories">
+  in category
+  
+  <a href="/categories/#summary" title="summary">summary</a>
+  
+</span>
+
+
+<span class="tags">
+  ( tagged with 
+  
+  <a href="/tags/#Haskell" title="Haskell">Haskell</a>
+  
+  <a href="/tags/#Typeclassopedia" title="Typeclassopedia">Typeclassopedia</a>
+  )
+</span>
+
+<p>最近在重新学习Haskell，看完LYAHFGG之后，想加深一下对Applicative，Monad啥的理解，找了这个叫Typeclassopedia的文章来看。断断续续看了两个星期左右，把里面的习题也做得差不多了。下面列一下题解（不保证完全，也不保证正确）。</p>
+
+<h2>Functor 函子</h2>
+
+<p>要为一个类型<code>f</code>实现一个函子实例，这个类型必须具有<code>* -&gt; *</code>这样的kind。也就是说<code>f</code>必须再接受一个类型<code>a</code>才能成为一个完整的类型。而函子的<code>fmap</code>就是一个将<code>a</code>映射到另外一个类型<code>b</code>的映射。所以<code>fmap</code>具有这样的类型签名：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">fmap</span> <span class="o">::</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">b</span>
+</code></pre></div>
+<h3>实现<code>Either e</code>与<code>((-&gt;) e)</code>的函子实例</h3>
+
+<p>首先我们知道<code>Either l r</code>是一个完整的类型（即<code>Either</code>的kind是<code>* -&gt; * -&gt; *</code>），那么要实现关于<code>Either</code>的函子实例，必须固定最左侧的<code>*</code>，也就是说我们只能实现关于<code>Either l</code>的函子实例。更具体来说，我们实现的函子实例可以将<code>Either l a</code>变换为<code>Either l b</code>。</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="kr">data</span> <span class="kt">MyEither</span> <span class="o">=</span> <span class="kt">MyLeft</span> <span class="n">e</span> <span class="o">|</span> <span class="kt">MyRight</span> <span class="n">a</span>
+<span class="kr">instance</span> <span class="kt">Functor</span> <span class="p">(</span><span class="kt">MyEither</span> <span class="n">e</span><span class="p">)</span> <span class="kr">where</span>
+  <span class="kr">_</span> <span class="p">`</span><span class="n">fmap</span><span class="p">`</span> <span class="kt">MyLeft</span> <span class="n">e</span> <span class="o">=</span> <span class="kt">MyLeft</span> <span class="n">e</span>
+  <span class="n">f</span> <span class="p">`</span><span class="n">fmap</span><span class="p">`</span> <span class="kt">MyRight</span> <span class="n">a</span> <span class="o">=</span> <span class="kt">MyRight</span> <span class="o">$</span> <span class="n">f</span> <span class="n">a</span>
+</code></pre></div>
+<p>同样的道理<code>((-&gt;) e)</code>的函子实例可以将<code>(e -&gt; a)</code>映射为<code>(e -&gt; b)</code>，那么它的实现就很直观了。</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="kr">instance</span> <span class="p">((</span><span class="o">-&gt;</span><span class="p">)</span> <span class="n">e</span><span class="p">)</span> <span class="kr">where</span>
+  <span class="n">f</span> <span class="p">`</span><span class="n">fmap</span><span class="p">`</span> <span class="n">g</span> <span class="o">=</span> <span class="nf">\</span><span class="n">e</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="p">(</span><span class="n">g</span> <span class="n">e</span><span class="p">)</span>
+</code></pre></div>
+<p>如果要写得吊一点：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="kr">instance</span> <span class="p">((</span><span class="o">-&gt;</span><span class="p">)</span> <span class="n">e</span><span class="p">)</span> <span class="kr">where</span>
+  <span class="n">fmap</span> <span class="o">=</span> <span class="p">(</span><span class="o">.</span><span class="p">)</span>
+</code></pre></div>
+<h3>实现<code>((,) e)</code>和<code>data Pair a = Pair a a</code>的函子实例，并解释他们的异同</h3>
+
+<p>与上面一样，<code>(,)</code>的kind是<code>* -&gt; * -&gt; *</code>，那么只能实现<code>((,) e)</code>的函子实例，也就是说只能实现<code>(e, a)</code>到<code>(e, b)</code>的映射，而Pair的kind已经是<code>* -&gt; *</code>了，所以可以实现<code>Pair a a</code>到<code>Pair b b</code>的函子实例。</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="kr">newtype</span> <span class="kt">MyTuple</span> <span class="n">e</span> <span class="n">a</span> <span class="o">=</span> <span class="kt">MyTuple</span> <span class="p">{</span> <span class="n">getMyTuple</span> <span class="o">::</span> <span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span> <span class="p">}</span>
+
+<span class="kr">instance</span> <span class="kt">Functor</span> <span class="p">(</span><span class="kt">MyTuple</span> <span class="n">e</span><span class="p">)</span> <span class="kr">where</span>
+  <span class="n">f</span> <span class="p">`</span><span class="n">fmap</span><span class="p">`</span> <span class="kt">MyTuple</span> <span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span> <span class="o">=</span> <span class="kt">MyTuple</span> <span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">f</span> <span class="n">a</span><span class="p">)</span>
+
+
+<span class="kr">data</span> <span class="kt">Pair</span> <span class="n">a</span> <span class="o">=</span> <span class="kt">Pair</span> <span class="n">a</span> <span class="n">a</span>
+
+<span class="kr">instance</span> <span class="kt">Functor</span> <span class="kt">Pair</span> <span class="kr">where</span>
+  <span class="n">f</span> <span class="p">`</span><span class="n">fmap</span><span class="p">`</span> <span class="kt">Pair</span> <span class="n">a</span> <span class="n">b</span> <span class="o">=</span> <span class="kt">Pair</span> <span class="p">(</span><span class="n">f</span> <span class="n">a</span><span class="p">)</span> <span class="p">(</span><span class="n">f</span> <span class="n">b</span><span class="p">)</span>
+</code></pre></div>
+<h3>实现以下类型的函子实例</h3>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="kr">data</span> <span class="kt">ITree</span> <span class="n">a</span> <span class="o">=</span> <span class="kt">Leaf</span> <span class="p">(</span><span class="kt">Int</span> <span class="o">-&gt;</span> <span class="n">a</span><span class="p">)</span>
+             <span class="o">|</span> <span class="kt">Node</span> <span class="p">[</span><span class="kt">ITree</span> <span class="n">a</span><span class="p">]</span>
+</code></pre></div>
+<p>Trivial:</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="kr">instance</span> <span class="kt">Functor</span> <span class="kt">ITree</span> <span class="kr">where</span>
+  <span class="n">f</span> <span class="p">`</span><span class="n">fmap</span><span class="p">`</span> <span class="kt">Leaf</span> <span class="n">t</span> <span class="o">=</span> <span class="kt">Leaf</span> <span class="o">$</span> <span class="n">f</span> <span class="p">`</span><span class="n">fmap</span><span class="p">`</span> <span class="n">t</span>
+  <span class="n">f</span> <span class="p">`</span><span class="n">fmap</span><span class="p">`</span> <span class="kt">Node</span> <span class="n">xs</span> <span class="o">=</span> <span class="kt">Node</span> <span class="o">$</span> <span class="n">map</span> <span class="p">(</span><span class="n">fmap</span> <span class="n">f</span><span class="p">)</span> <span class="n">xs</span>
+</code></pre></div>
+<p>*如果你知道<code>[]</code>也是一个函子，那么<code>map</code>实际上可以写成<code>fmap</code>。</p>
+
+<h3>说明两个函子的复合也是一个函子</h3>
+
+<p>首先定义出两个函子的复合这个类型，要注意<code>FCompose</code>这个构造器是一个一元函数，而不是三元函数：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="kr">data</span> <span class="kt">FCompose</span> <span class="n">f1</span> <span class="n">f2</span> <span class="n">x</span> <span class="o">=</span> <span class="kt">FCompose</span> <span class="p">(</span><span class="n">f1</span> <span class="p">(</span><span class="n">f2</span> <span class="n">x</span><span class="p">))</span>
+    <span class="kr">deriving</span> <span class="kt">Show</span>
+</code></pre></div>
+<p>当<code>f1</code>和<code>f2</code>是函子时，</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="kr">instance</span> <span class="p">(</span><span class="kt">Functor</span> <span class="n">f1</span><span class="p">,</span> <span class="kt">Functor</span> <span class="n">f2</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="kt">Functor</span> <span class="p">(</span><span class="kt">FCompose</span> <span class="n">f1</span> <span class="n">f2</span><span class="p">)</span> <span class="kr">where</span>
+  <span class="n">f</span> <span class="p">`</span><span class="n">fmap</span><span class="p">`</span> <span class="kt">FCompose</span> <span class="n">t</span> <span class="o">=</span> <span class="kt">FCompose</span> <span class="o">$</span> <span class="n">fmap</span> <span class="n">f</span> <span class="p">`</span><span class="n">fmap</span><span class="p">`</span> <span class="n">t</span>
+  <span class="c1">-- = FCompose $ fmap (fmap f) t = FCompose $ (fmap . fmap) f t</span>
+</code></pre></div>
+<p>对于<code>FCompose f1 f2</code>，如果，<code>fmap</code>方法的类型应该是</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">fmap</span> <span class="o">::</span> <span class="p">(</span><span class="kt">Functor</span> <span class="n">f1</span><span class="p">,</span> <span class="kt">Functor</span> <span class="n">f2</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">FCompose</span> <span class="n">f1</span> <span class="n">f2</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="kt">FCompose</span> <span class="n">f1</span> <span class="n">f2</span> <span class="n">b</span>
+</code></pre></div>
+<p>也就是说如果我们能把<code>f :: a -&gt; b</code>映射到<code>f1 (f2 a)</code>上并得到<code>f1 (f2 b)</code>，那么两个函子的复合就仍是一个函子。所以，</p>
+
+<ol>
+<li>首先利用<code>fmap :: (a -&gt; b) -&gt; f2 a -&gt; f2 b</code>把<code>f :: a -&gt; b</code>提升（lift）到<code>f2</code>上得到<code>f&#39; :: f2 a -&gt; f2 b</code>（柯里化）；</li>
+<li>这样就可以用<code>f1</code>的<code>fmap :: (f2 a -&gt; f2 b) -&gt; f1 (f2 a) -&gt; f1 (f2 b)</code>将<code>f&#39;</code>提升为<code>f&#39;&#39; :: f1 (f2 a) -&gt; f1 (f2 b)</code>（仍然是柯里化）；</li>
+<li>接下来将<code>f&#39;&#39;</code>应用到<code>f1 (f2 a)</code>上得到<code>f1 (f2 b)</code>。</li>
+</ol>
+
+<p>这说明两个任意函子的复合确实仍然是一个函子。它告诉我们，我们可以利用各种函子复合出任意复杂的新函子。</p>
+
+<p>实际上，函数式编程的一个重要的部分就是利用各种复杂结构间的复合，降低整个程序的复杂度，即尽量将程序的复杂度转移到结构之中，由于结构是通用的，并且充分研究过的，使得程序员可以更加关注于问题的业务上的解决。也就是说，Typeclassopedia这篇文章里介绍的各种数据类型其实就是函数式编程中的<strong>设计模式</strong>。</p>
+
+<p>要得到关于多个函子的复合的<code>fmap</code>方法，只需要将多个<code>fmap</code>复合。例如两个函子复合的情况，可以是<code>(fmap . fmap) f t</code>。</p>
+
+<h2>Applicative 应用函子</h2>
+
+<h3>证明以下等式</h3>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">pure</span> <span class="n">f</span> <span class="o">&lt;*&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">pure</span> <span class="p">(</span><span class="n">flip</span> <span class="p">(</span><span class="o">$</span><span class="p">))</span> <span class="o">&lt;*&gt;</span> <span class="n">x</span> <span class="o">&lt;*&gt;</span> <span class="n">pure</span> <span class="n">f</span>
+</code></pre></div>
+<p>从右边入手</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell">    <span class="n">pure</span> <span class="p">(</span><span class="n">flip</span> <span class="p">(</span><span class="o">$</span><span class="p">))</span> <span class="o">&lt;*&gt;</span> <span class="n">x</span> <span class="o">&lt;*&gt;</span> <span class="n">pure</span> <span class="n">f</span>
+  <span class="o">=</span> <span class="n">pure</span> <span class="p">(</span><span class="n">flip</span> <span class="p">(</span><span class="o">$</span><span class="p">))</span> <span class="o">&lt;*&gt;</span> <span class="n">pure</span> <span class="n">x'</span> <span class="o">&lt;*&gt;</span> <span class="n">pure</span> <span class="n">f</span> <span class="kr">where</span> <span class="n">x</span> <span class="o">=</span> <span class="n">pure</span> <span class="n">x'</span>
+  <span class="o">=</span> <span class="n">pure</span> <span class="p">(</span><span class="n">flip</span> <span class="p">(</span><span class="o">$</span><span class="p">)</span> <span class="n">x'</span> <span class="n">f</span><span class="p">)</span>  <span class="c1">-- (Applicative的同态性)</span>
+  <span class="o">=</span> <span class="n">pure</span> <span class="p">(</span><span class="n">f</span> <span class="n">x'</span><span class="p">)</span>  <span class="c1">-- (f $ y = f y)</span>
+  <span class="o">=</span> <span class="n">pure</span> <span class="n">f</span> <span class="o">&lt;*&gt;</span> <span class="n">pure</span> <span class="n">x'</span>
+  <span class="o">=</span> <span class="n">pure</span> <span class="n">f</span> <span class="o">&lt;*&gt;</span> <span class="n">x</span>
+</code></pre></div>
+<p>其实仔细看了之后会发现这个等式其实很无聊。</p>
+
+<h3>实现<code>Maybe</code>的Applicative实例</h3>
+
+<p>Trivial:</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="kr">data</span> <span class="kt">MyMaybe</span> <span class="n">a</span> <span class="o">=</span> <span class="kt">MyJust</span> <span class="n">a</span> <span class="o">|</span> <span class="kt">MyNothing</span>
+
+<span class="kr">instance</span> <span class="kt">Functor</span> <span class="kt">MyMaybe</span> <span class="kr">where</span>
+  <span class="n">f</span> <span class="p">`</span><span class="n">fmap</span><span class="p">`</span> <span class="kt">MyJust</span> <span class="n">x</span> <span class="o">=</span> <span class="kt">MyJust</span> <span class="o">$</span> <span class="n">f</span> <span class="n">x</span>
+  <span class="n">f</span> <span class="p">`</span><span class="n">fmap</span><span class="p">`</span> <span class="kt">MyNothing</span> <span class="o">=</span> <span class="kt">MyNothing</span>
+
+<span class="kr">instance</span> <span class="kt">Applicative</span> <span class="kt">MyMaybe</span> <span class="kr">where</span>
+  <span class="n">pure</span> <span class="n">x</span> <span class="o">=</span> <span class="kt">MyJust</span> <span class="n">x</span>
+  <span class="kt">MyJust</span> <span class="n">f</span> <span class="o">&lt;*&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">fmap</span> <span class="n">f</span> <span class="n">x</span>
+  <span class="kt">MyNothing</span> <span class="o">&lt;*&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="kt">MyNothing</span>
+</code></pre></div>
+<p>我们接下来来检查上面的实现是否满足Applicative的规定。</p>
+
+<p>恒等律：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell">    <span class="n">pure</span> <span class="n">id</span> <span class="o">&lt;*&gt;</span> <span class="kt">MyJust</span> <span class="mi">42</span>
+  <span class="o">=</span> <span class="kt">MyJust</span> <span class="n">id</span> <span class="o">&lt;*&gt;</span> <span class="kt">MyJust</span> <span class="mi">42</span>
+  <span class="o">=</span> <span class="n">fmap</span> <span class="n">id</span> <span class="p">(</span><span class="kt">MyJust</span> <span class="mi">42</span><span class="p">)</span>
+  <span class="o">=</span> <span class="kt">MyJust</span> <span class="p">(</span><span class="n">id</span> <span class="mi">42</span><span class="p">)</span>
+  <span class="o">=</span> <span class="kt">MyJust</span> <span class="mi">42</span>
+
+    <span class="n">pure</span> <span class="n">id</span> <span class="o">&lt;*&gt;</span> <span class="kt">MyNothing</span>
+  <span class="o">=</span> <span class="kt">MyJust</span> <span class="n">id</span> <span class="o">&lt;*&gt;</span> <span class="kt">MyNothing</span>
+  <span class="o">=</span> <span class="n">fmap</span> <span class="n">id</span> <span class="kt">MyNothing</span>
+  <span class="o">=</span> <span class="kt">MyNothing</span>
+</code></pre></div>
+<p>同态律：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell">    <span class="n">pure</span> <span class="n">f</span> <span class="o">&lt;*&gt;</span> <span class="n">pure</span> <span class="n">x</span>
+  <span class="o">=</span> <span class="kt">MyJust</span> <span class="n">f</span> <span class="o">&lt;*&gt;</span> <span class="kt">MyJust</span> <span class="n">x</span>
+  <span class="o">=</span> <span class="n">fmap</span> <span class="n">f</span> <span class="p">(</span><span class="kt">MyJust</span> <span class="n">x</span><span class="p">)</span>
+  <span class="o">=</span> <span class="kt">MyJust</span> <span class="p">(</span><span class="n">f</span> <span class="n">x</span><span class="p">)</span>
+  <span class="o">=</span> <span class="n">pure</span> <span class="p">(</span><span class="n">f</span> <span class="n">x</span><span class="p">)</span>
+</code></pre></div>
+<p>交换律：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="c1">-- 若 u = MyJust u'，</span>
+    <span class="n">u</span> <span class="o">&lt;*&gt;</span> <span class="n">pure</span> <span class="n">y</span>
+  <span class="o">=</span> <span class="kt">MyJust</span> <span class="n">u'</span> <span class="o">&lt;*&gt;</span> <span class="n">pure</span> <span class="n">y</span>
+  <span class="o">=</span> <span class="kt">MyJust</span> <span class="n">u'</span> <span class="o">&lt;*&gt;</span> <span class="kt">MyJust</span> <span class="n">y</span>
+  <span class="o">=</span> <span class="n">fmap</span> <span class="n">u'</span> <span class="p">(</span><span class="kt">MyJust</span> <span class="n">y</span><span class="p">)</span>
+  <span class="o">=</span> <span class="kt">MyJust</span> <span class="p">(</span><span class="n">u'</span> <span class="n">y</span><span class="p">)</span>
+  <span class="o">=</span> <span class="n">pure</span> <span class="p">(</span><span class="n">u'</span> <span class="n">y</span><span class="p">)</span>
+  <span class="o">=</span> <span class="n">pure</span> <span class="p">(</span><span class="n">u'</span> <span class="o">$</span> <span class="n">y</span><span class="p">)</span>
+  <span class="o">=</span> <span class="n">pure</span> <span class="p">((</span><span class="nf">\</span><span class="n">x</span> <span class="o">-&gt;</span> <span class="n">x</span> <span class="o">$</span> <span class="n">y</span><span class="p">)</span> <span class="n">u'</span><span class="p">)</span>
+  <span class="o">=</span> <span class="n">pure</span> <span class="p">((</span><span class="o">$</span> <span class="n">y</span><span class="p">)</span> <span class="n">u'</span><span class="p">)</span>
+  <span class="o">=</span> <span class="n">pure</span> <span class="p">(</span><span class="o">$</span> <span class="n">y</span><span class="p">)</span> <span class="o">&lt;*&gt;</span> <span class="n">pure</span> <span class="n">u'</span> <span class="c1">-- 由同态律得</span>
+  <span class="o">=</span> <span class="n">pure</span> <span class="p">(</span><span class="o">$</span> <span class="n">y</span><span class="p">)</span> <span class="o">&lt;*&gt;</span> <span class="n">u</span>
+
+<span class="c1">-- 若 u = MyNothing</span>
+    <span class="n">u</span> <span class="o">&lt;*&gt;</span> <span class="n">pure</span> <span class="n">y</span>
+  <span class="o">=</span> <span class="kt">MyNothing</span> <span class="o">&lt;*&gt;</span> <span class="n">pure</span> <span class="n">y</span>
+  <span class="o">=</span> <span class="kt">MyNothing</span>
+
+    <span class="n">pure</span> <span class="p">(</span><span class="o">$</span> <span class="n">y</span><span class="p">)</span> <span class="o">&lt;*&gt;</span> <span class="n">u</span>
+  <span class="o">=</span> <span class="n">fmap</span> <span class="p">(</span><span class="o">$</span> <span class="n">y</span><span class="p">)</span> <span class="kt">MyNothing</span>
+  <span class="o">=</span> <span class="kt">MyNothing</span>
+
+<span class="c1">-- =&gt; u &lt;*&gt; pure y = pure ($ y) &lt;*&gt; u</span>
+</code></pre></div>
+<p>复合律：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell">    <span class="n">u</span> <span class="o">&lt;*&gt;</span> <span class="p">(</span><span class="n">v</span> <span class="o">&lt;*&gt;</span> <span class="n">w</span><span class="p">)</span>
+  <span class="o">=</span> <span class="n">u</span> <span class="o">&lt;*&gt;</span> <span class="p">(</span><span class="kt">Maybe</span> <span class="n">v'</span> <span class="o">&lt;*&gt;</span> <span class="kt">Maybe</span> <span class="n">w'</span><span class="p">)</span> <span class="c1">-- 由(&lt;*&gt;)的定义得</span>
+  <span class="o">=</span> <span class="n">u</span> <span class="o">&lt;*&gt;</span> <span class="kt">Maybe</span> <span class="p">(</span><span class="n">v'</span> <span class="n">w'</span><span class="p">)</span>
+  <span class="o">=</span> <span class="kt">Maybe</span> <span class="n">u'</span> <span class="o">&lt;*&gt;</span> <span class="kt">Maybe</span> <span class="p">(</span><span class="n">v'</span> <span class="n">w'</span><span class="p">)</span>
+  <span class="o">=</span> <span class="kt">Maybe</span> <span class="p">(</span><span class="n">u'</span> <span class="p">(</span><span class="n">v'</span> <span class="n">w'</span><span class="p">))</span>
+  <span class="o">=</span> <span class="kt">Maybe</span> <span class="p">((</span><span class="n">u'</span> <span class="o">.</span> <span class="n">v'</span><span class="p">)</span> <span class="n">w'</span><span class="p">)</span> <span class="c1">-- 由(.)的定义得</span>
+  <span class="o">=</span> <span class="kt">Maybe</span> <span class="p">((</span><span class="o">.</span><span class="p">)</span> <span class="n">u'</span> <span class="n">v'</span> <span class="n">w'</span><span class="p">)</span>
+  <span class="o">=</span> <span class="kt">Maybe</span> <span class="p">((</span><span class="o">.</span><span class="p">)</span> <span class="n">u'</span> <span class="n">v'</span><span class="p">)</span> <span class="o">&lt;*&gt;</span> <span class="kt">Maybe</span> <span class="n">w'</span> <span class="c1">-- 由同态律得</span>
+  <span class="o">=</span> <span class="kt">Maybe</span> <span class="p">((</span><span class="o">.</span><span class="p">)</span> <span class="n">u'</span><span class="p">)</span> <span class="o">&lt;*&gt;</span> <span class="kt">Maybe</span> <span class="n">v'</span> <span class="o">&lt;*&gt;</span> <span class="n">w</span> <span class="c1">-- 仍然由同态律得</span>
+  <span class="o">=</span> <span class="kt">Maybe</span> <span class="p">(</span><span class="o">.</span><span class="p">)</span> <span class="o">&lt;*&gt;</span> <span class="kt">Maybe</span> <span class="n">u'</span> <span class="o">&lt;*&gt;</span> <span class="n">v</span> <span class="o">&lt;*&gt;</span> <span class="n">w</span>
+  <span class="o">=</span> <span class="kt">Maybe</span> <span class="p">(</span><span class="o">.</span><span class="p">)</span> <span class="o">&lt;*&gt;</span> <span class="n">u</span> <span class="o">&lt;*&gt;</span> <span class="n">v</span> <span class="o">&lt;*&gt;</span> <span class="n">w</span>
+  <span class="o">=</span> <span class="n">pure</span> <span class="p">(</span><span class="o">.</span><span class="p">)</span> <span class="o">&lt;*&gt;</span> <span class="n">u</span> <span class="o">&lt;*&gt;</span> <span class="n">v</span> <span class="o">&lt;*&gt;</span> <span class="n">w</span>
+</code></pre></div>
+<h3>确定<code>ZipList</code>的Applicative实例里<code>pure</code>的正确定义，能够满足Applicative性质的实现有且仅有一个</h3>
+
+<p>我们已经知道<code>(&lt;*&gt;)</code>是使用<code>zipWith</code>函数实现的，现在考虑第一条性质<code>pure id &lt;*&gt; v = v</code>，如果<code>v</code>是一个有3个元素的<code>ZipList</code>，那么<code>pure id</code>就应该返回一个有<strong>至少</strong>三个<code>id</code>的<code>ZipList</code>，使得<code>zipWith</code>函数能够将<code>v</code>中的元素全部利用起来。到这里我们可以很轻松的得出<code>pure</code>的定义了</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">pure</span> <span class="o">=</span> <span class="kt">ZipList</span> <span class="o">.</span> <span class="n">repeat</span>
+</code></pre></div>
+<p>我们稍微检查一下这个实现的性质：</p>
+
+<p>恒等律：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell">    <span class="n">pure</span> <span class="n">id</span> <span class="o">&lt;*&gt;</span> <span class="kt">ZipList</span> <span class="n">xs</span>
+  <span class="o">=</span> <span class="kt">ZipList</span> <span class="p">(</span><span class="n">repeat</span> <span class="n">id</span><span class="p">)</span> <span class="o">&lt;*&gt;</span> <span class="kt">ZipList</span> <span class="n">xs</span>
+  <span class="o">=</span> <span class="kt">ZipList</span> <span class="p">(</span><span class="n">zipWith</span> <span class="p">(</span><span class="o">$</span><span class="p">)</span> <span class="p">(</span><span class="n">repeat</span> <span class="n">id</span><span class="p">)</span> <span class="n">xs</span><span class="p">)</span>
+  <span class="o">=</span> <span class="kt">ZipList</span> <span class="n">xs</span> <span class="c1">-- 由Haskell常识得</span>
+</code></pre></div>
+<p>同态律：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell">    <span class="n">pure</span> <span class="n">f</span> <span class="o">&lt;*&gt;</span> <span class="n">pure</span> <span class="n">x</span>
+  <span class="o">=</span> <span class="kt">ZipList</span> <span class="p">(</span><span class="n">repeat</span> <span class="n">f</span><span class="p">)</span> <span class="o">&lt;*&gt;</span> <span class="kt">ZipList</span> <span class="p">(</span><span class="n">repeat</span> <span class="n">x</span><span class="p">)</span>
+  <span class="o">=</span> <span class="kt">ZipList</span> <span class="p">(</span><span class="n">zipWith</span> <span class="p">(</span><span class="o">$</span><span class="p">)</span> <span class="p">(</span><span class="n">repeat</span> <span class="n">f</span><span class="p">)</span> <span class="p">(</span><span class="n">repeat</span> <span class="n">x</span><span class="p">))</span>
+  <span class="o">=</span> <span class="kt">ZipList</span> <span class="p">(</span><span class="n">repeat</span> <span class="p">(</span><span class="n">f</span> <span class="o">$</span> <span class="n">x</span><span class="p">))</span> <span class="c1">-- 由Haskell常识得</span>
+  <span class="o">=</span> <span class="kt">ZipList</span> <span class="p">(</span><span class="n">repeat</span> <span class="p">(</span><span class="n">f</span> <span class="n">x</span><span class="p">))</span>
+  <span class="o">=</span> <span class="kt">ZipList</span> <span class="o">.</span> <span class="n">repeat</span> <span class="p">(</span><span class="n">f</span> <span class="n">x</span><span class="p">)</span> <span class="c1">-- 由(.)的定义得</span>
+  <span class="o">=</span> <span class="n">pure</span> <span class="p">(</span><span class="n">f</span> <span class="n">x</span><span class="p">)</span>
+</code></pre></div>
+<p>剩下的规则就不一一推导了。</p>
+
+<h3>利用<code>unit</code>和<code>(**)</code>实现<code>pure</code>与<code>(&lt;*&gt;)</code>，再反过来实现他们</h3>
+
+<p>考虑在这个情况下的<code>pure</code>、<code>unit</code>、<code>(**)</code>和<code>fmap</code>的类型签名（已知一个Monoidal是一个函子）：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">pure</span> <span class="o">::</span> <span class="kt">Monoidal</span> <span class="n">m</span> <span class="o">=&gt;</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">m</span> <span class="n">a</span>
+<span class="n">unit</span> <span class="o">::</span> <span class="kt">Monoidal</span> <span class="n">m</span> <span class="o">=&gt;</span> <span class="n">m</span> <span class="nb">()</span>
+<span class="p">(</span><span class="o">**</span><span class="p">)</span> <span class="o">::</span> <span class="kt">Monoidal</span> <span class="n">m</span> <span class="o">=&gt;</span> <span class="n">m</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">m</span> <span class="n">b</span> <span class="o">-&gt;</span> <span class="n">m</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+<span class="n">fmap</span> <span class="o">::</span> <span class="kt">Monoidal</span> <span class="n">m</span> <span class="o">=&gt;</span> <span class="p">(</span><span class="n">t</span> <span class="o">-&gt;</span> <span class="n">a</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">m</span> <span class="n">t</span> <span class="o">-&gt;</span> <span class="n">m</span> <span class="n">a</span>
+</code></pre></div>
+<p>可以发现<code>fmap</code>的返回值类型就是我们关心的类型（<code>fmap</code>的返回值类型与<code>pure</code>的相同）。但是此时<code>fmap</code>中的<code>t</code>从哪来呢。这时我们可以注意到Monoidal的<code>unit</code>方法恒定返回一个<code>m ()</code>类型的值，那么如果将<code>t</code>特化成<code>()</code>，就有了</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">fmap</span> <span class="o">::</span> <span class="kt">Monoidal</span> <span class="n">m</span> <span class="o">=&gt;</span> <span class="p">(</span><span class="nb">()</span> <span class="o">-&gt;</span> <span class="n">a</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">m</span> <span class="nb">()</span> <span class="o">-&gt;</span> <span class="n">m</span> <span class="n">a</span>
+</code></pre></div>
+<p>这样就清楚了，先构造出一个接受一个任意参数的函数，然后将这个函数<code>fmap</code>到<code>unit</code>上</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">pure</span> <span class="n">x</span> <span class="o">=</span> <span class="n">fmap</span> <span class="p">(</span><span class="nf">\</span><span class="kr">_</span> <span class="o">-&gt;</span> <span class="n">x</span><span class="p">)</span> <span class="n">unit</span>
+<span class="c1">-- or</span>
+<span class="n">pure</span> <span class="n">x</span> <span class="o">=</span> <span class="n">fmap</span> <span class="p">(</span><span class="n">const</span> <span class="n">x</span><span class="p">)</span> <span class="n">unit</span>
+</code></pre></div>
+<p>再考虑<code>(&lt;*&gt;)</code>与其它已知方法的类型签名：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="p">(</span><span class="o">&lt;*&gt;</span><span class="p">)</span> <span class="o">::</span> <span class="kt">Monoidal</span> <span class="n">m</span> <span class="o">=&gt;</span> <span class="n">m</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">m</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">m</span> <span class="n">b</span>
+<span class="n">f</span> <span class="o">&lt;*&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="o">???</span>
+
+<span class="n">unit</span> <span class="o">::</span> <span class="kt">Monoidal</span> <span class="n">m</span> <span class="o">=&gt;</span> <span class="n">m</span> <span class="nb">()</span>
+<span class="p">(</span><span class="o">**</span><span class="p">)</span> <span class="o">::</span> <span class="kt">Monoidal</span> <span class="n">m</span> <span class="o">=&gt;</span> <span class="n">m</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">m</span> <span class="n">b</span> <span class="o">-&gt;</span> <span class="n">m</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+<span class="n">fmap</span> <span class="o">::</span> <span class="kt">Monoidal</span> <span class="n">m</span> <span class="o">=&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">m</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">m</span> <span class="n">b</span>
+</code></pre></div>
+<p>可以发现<code>(&lt;*&gt;)</code>与<code>fmap</code>除了第一个参数类型不是特别相同，其它的是一样的。所以思路仍然是构造出一个供<code>fmap</code>使用的函数。同时我们发现<code>(**)</code>是Monoidal中可以与两个类型交互的方法，说明我们在构造上面说的函数中会使用到它。现在，已知量是<code>f :: m (a -&gt; b)</code>，<code>x :: m a</code>，我们首先可以尝试<code>f ** x</code>，这样我们会得到<code>f ** x :: m (a -&gt; b, a)</code>，而这样的类型很容易让人联想到它的计算结果的类型就是<code>m b</code>！因此如果将<code>fmap</code>中的<code>m a</code>特化成<code>m (a -&gt; b, a)</code>，那么整个<code>fmap</code>的类型签名会变为：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">fmap</span> <span class="o">::</span> <span class="p">((</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">m</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">m</span> <span class="n">b</span>
+</code></pre></div>
+<p>问题也就变为，如何构造出一个函数使得其类型为<code>(a -&gt; b, a) -&gt; b</code>，这样就很简单了</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">mf</span> <span class="o">&lt;*&gt;</span> <span class="n">mx</span> <span class="o">=</span> <span class="n">fmap</span> <span class="p">(</span><span class="nf">\</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">x</span><span class="p">)</span> <span class="p">(</span><span class="n">mf</span> <span class="o">**</span> <span class="n">mx</span><span class="p">)</span>
+</code></pre></div>
+<p>这里另外介绍一个技巧（或者说是idiom）：<code>\(f, x) -&gt; f x</code>可以写成<code>uncurry id</code>。</p>
+
+<p>很脏。首先来检查一下<code>uncurry</code>的类型：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">uncurry</span> <span class="o">::</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span> <span class="o">-&gt;</span> <span class="n">c</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">c</span>
+</code></pre></div>
+<p>因为<code>(-&gt;)</code>是右结合的，所以上面的类型也可以写成</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">uncurry</span> <span class="o">::</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">d</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">c</span>
+  <span class="kr">where</span> <span class="n">d</span> <span class="o">::</span> <span class="n">b</span> <span class="o">-&gt;</span> <span class="n">c</span>
+</code></pre></div>
+<p>也就是说如果你给我一个返回另外一个一元函数的一元函数，并且给我两个参数，我能帮你计算出结果。如果要把<code>id :: a -&gt; a</code>提供给它，那么<code>id</code>的参数必须是一个一元函数，也就是说它必须变形为<code>id :: (b -&gt; c) -&gt; (b -&gt; c)</code>，那么就有了</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">uncurry</span> <span class="n">id</span> <span class="o">::</span> <span class="p">(</span><span class="n">b</span> <span class="o">-&gt;</span> <span class="n">c</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">c</span>
+</code></pre></div>
+<p>这跟我们上面推理出的<code>(a -&gt; b, a) -&gt; b</code>的类型恰好一样。</p>
+
+<p>用<code>pure</code>来实现<code>unit</code>很简单：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">unit</span> <span class="o">::</span> <span class="kt">Applicative</span> <span class="n">f</span> <span class="o">=&gt;</span> <span class="n">f</span> <span class="nb">()</span>
+<span class="n">unit</span> <span class="o">=</span> <span class="n">pure</span> <span class="nb">()</span>
+</code></pre></div>
+<p>用Applicative方法来实现<code>(**)</code>，首先检查类型</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">pure</span> <span class="o">::</span> <span class="kt">Applicative</span> <span class="n">f</span> <span class="o">=&gt;</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span>
+<span class="p">(</span><span class="o">&lt;*&gt;</span><span class="p">)</span> <span class="o">::</span> <span class="kt">Applicative</span> <span class="n">f</span> <span class="o">=&gt;</span> <span class="n">f</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">b</span>
+<span class="p">(</span><span class="o">**</span><span class="p">)</span> <span class="o">::</span> <span class="kt">Applicative</span> <span class="n">f</span> <span class="o">=&gt;</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">b</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</code></pre></div>
+<p>我们可以观察出<code>(&lt;*&gt;)</code>与<code>(**)</code>的类型很相似，而且要使用<code>(&lt;*&gt;)</code>来获得<code>(**)</code>的结果。那么不妨将<code>(&lt;*&gt;)</code>的返回值类型特化为<code>f (a, b)</code>，这样<code>(&lt;*&gt;)</code>的整个类型就是：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="p">(</span><span class="o">&lt;*&gt;</span><span class="p">)</span> <span class="o">::</span> <span class="kt">Applicative</span> <span class="n">f</span> <span class="o">=&gt;</span> <span class="n">f</span> <span class="p">(</span><span class="n">t</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">t</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</code></pre></div>
+<p>接下来就是如何构造这样一个函数<code>t -&gt; (a, b)</code>使得我们可以利用已知量<code>f a</code>与<code>f b</code>。很自然的想法是构造一个这样的二元函数<code>\a b -&gt; (a, b)</code>，这样我们就可以</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="p">(</span><span class="o">**</span><span class="p">)</span> <span class="o">::</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">b</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+<span class="n">fa</span> <span class="o">**</span> <span class="n">fb</span> <span class="o">=</span> <span class="n">pure</span> <span class="p">(</span><span class="nf">\</span><span class="n">a</span> <span class="n">b</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">))</span> <span class="o">&lt;*&gt;</span> <span class="n">fa</span> <span class="o">&lt;*&gt;</span> <span class="n">fb</span>
+</code></pre></div>
+<p>或者</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">fa</span> <span class="o">**</span> <span class="n">fb</span> <span class="o">=</span> <span class="n">pure</span> <span class="p">(,)</span> <span class="o">&lt;*&gt;</span> <span class="n">fa</span> <span class="o">&lt;*&gt;</span> <span class="n">fb</span>
+</code></pre></div>
+<p>看到这，你就会觉得上面的推导其实是复杂化了。我们可以这样理解：将元组构造器<code>(,)</code>通过<code>pure</code>提升到Applicative中，然后将两个已经在Applicative里的已知量通过<code>(&lt;*&gt;)</code>应用到<code>pure (,)</code>上。</p>
+
+<h2>Monad 单子</h2>
+
+<h3>实现列表的单子实例</h3>
+
+<p>要注意到这里的列表指的并不是<code>ZipList</code>。</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="kr">instance</span> <span class="kt">Functor</span> <span class="kt">[]</span> <span class="kr">where</span>
+  <span class="n">f</span> <span class="p">`</span><span class="n">fmap</span><span class="p">`</span> <span class="kt">[]</span> <span class="o">=</span> <span class="kt">[]</span>
+  <span class="n">f</span> <span class="p">`</span><span class="n">fmap</span><span class="p">`</span> <span class="p">(</span><span class="n">x</span><span class="o">:</span><span class="n">xs</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="n">f</span> <span class="n">x</span><span class="p">)</span><span class="o">:</span><span class="p">(</span><span class="n">fmap</span> <span class="n">f</span> <span class="n">xs</span><span class="p">)</span>
+
+<span class="kr">instance</span> <span class="kt">Applicative</span> <span class="kt">[]</span> <span class="kr">where</span>
+  <span class="n">pure</span> <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">]</span>
+  <span class="n">fs</span> <span class="o">&lt;*&gt;</span> <span class="n">xs</span> <span class="o">=</span> <span class="n">concat</span> <span class="o">$</span> <span class="n">map</span> <span class="p">(</span><span class="nf">\</span><span class="n">f</span> <span class="o">-&gt;</span> <span class="n">fmap</span> <span class="n">f</span> <span class="n">xs</span><span class="p">)</span> <span class="p">(</span><span class="n">fmap</span> <span class="p">(</span><span class="o">$</span><span class="p">)</span> <span class="n">fs</span><span class="p">)</span>
+  <span class="c1">-- 首先通过(fmap ($) fs)取得[($) f]，然后将每一个(($) f)通过fmap应用于xs，最后</span>
+  <span class="c1">-- concat一下来满足类型约束。</span>
+
+<span class="kr">instance</span> <span class="kt">Monad</span> <span class="kt">[]</span> <span class="kr">where</span>
+  <span class="n">xs</span> <span class="o">&gt;&gt;=</span> <span class="n">f</span> <span class="o">=</span> <span class="n">concat</span> <span class="o">$</span> <span class="n">pure</span> <span class="n">f</span> <span class="o">&lt;*&gt;</span> <span class="n">xs</span>
+</code></pre></div>
+<p>接下来检查一下单子所要满足的规律</p>
+
+<p>左恒等律：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell">    <span class="n">return</span> <span class="n">x</span> <span class="o">&gt;&gt;=</span> <span class="n">f</span>
+  <span class="o">=</span> <span class="n">pure</span> <span class="n">x</span> <span class="o">&gt;&gt;=</span> <span class="n">f</span>
+  <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">&gt;&gt;=</span> <span class="n">f</span>
+  <span class="o">=</span> <span class="n">concat</span> <span class="o">$</span> <span class="p">[</span><span class="n">f</span><span class="p">]</span> <span class="o">&lt;*&gt;</span> <span class="p">[</span><span class="n">x</span><span class="p">]</span>
+  <span class="o">=</span> <span class="n">concat</span> <span class="p">(</span><span class="n">concat</span> <span class="o">$</span> <span class="n">map</span> <span class="p">(</span><span class="nf">\</span><span class="n">f</span> <span class="o">-&gt;</span> <span class="n">fmap</span> <span class="n">f</span> <span class="p">[</span><span class="n">x</span><span class="p">])</span> <span class="p">(</span><span class="n">fmap</span> <span class="p">(</span><span class="o">$</span><span class="p">)</span> <span class="p">[</span><span class="n">f</span><span class="p">]))</span>
+  <span class="o">=</span> <span class="n">concat</span> <span class="p">(</span><span class="n">concat</span> <span class="o">$</span> <span class="n">map</span> <span class="p">(</span><span class="nf">\</span><span class="n">f</span> <span class="o">-&gt;</span> <span class="n">fmap</span> <span class="n">f</span> <span class="p">[</span><span class="n">x</span><span class="p">])</span> <span class="p">[(</span><span class="n">f</span> <span class="o">$</span><span class="p">)])</span>
+  <span class="o">=</span> <span class="n">concat</span> <span class="p">(</span><span class="n">concat</span> <span class="o">$</span> <span class="p">[</span><span class="n">fmap</span> <span class="p">(</span><span class="n">f</span> <span class="o">$</span><span class="p">)</span> <span class="p">[</span><span class="n">x</span><span class="p">]])</span>
+  <span class="o">=</span> <span class="n">concat</span> <span class="p">(</span><span class="n">concat</span> <span class="p">[[</span><span class="n">f</span> <span class="n">x</span><span class="p">]])</span>
+  <span class="o">=</span> <span class="n">concat</span> <span class="p">[</span><span class="n">f</span> <span class="n">x</span><span class="p">]</span>
+  <span class="o">=</span> <span class="n">f</span> <span class="n">x</span>
+</code></pre></div>
+<p>右恒等律：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell">    <span class="n">xs</span> <span class="o">&gt;&gt;=</span> <span class="n">return</span>
+  <span class="o">=</span> <span class="n">xs</span> <span class="o">&gt;&gt;=</span> <span class="n">pure</span>
+  <span class="o">=</span> <span class="n">concat</span> <span class="o">$</span> <span class="n">pure</span> <span class="n">pure</span> <span class="o">&lt;*&gt;</span> <span class="n">xs</span>
+  <span class="o">=</span> <span class="n">concat</span> <span class="o">$</span> <span class="p">[</span><span class="n">pure</span><span class="p">]</span> <span class="o">&lt;*&gt;</span> <span class="n">xs</span>
+  <span class="o">=</span> <span class="n">concat</span> <span class="p">(</span><span class="n">concat</span> <span class="o">$</span> <span class="n">map</span> <span class="p">(</span><span class="nf">\</span><span class="n">f</span> <span class="o">-&gt;</span> <span class="n">fmap</span> <span class="n">f</span> <span class="n">xs</span><span class="p">)</span> <span class="p">(</span><span class="n">fmap</span> <span class="p">(</span><span class="o">$</span><span class="p">)</span> <span class="p">[</span><span class="n">pure</span><span class="p">]))</span>
+  <span class="o">=</span> <span class="n">concat</span> <span class="o">.</span> <span class="n">concat</span> <span class="o">$</span> <span class="n">map</span> <span class="p">(</span><span class="nf">\</span><span class="n">f</span> <span class="o">-&gt;</span> <span class="n">fmap</span> <span class="n">f</span> <span class="n">xs</span><span class="p">)</span> <span class="p">[(</span><span class="n">pure</span> <span class="o">$</span><span class="p">)]</span>
+  <span class="o">=</span> <span class="n">concat</span> <span class="o">.</span> <span class="n">concat</span> <span class="o">$</span> <span class="p">[</span><span class="n">fmap</span> <span class="p">(</span><span class="n">pure</span> <span class="o">$</span><span class="p">)</span> <span class="n">xs</span><span class="p">]</span>
+  <span class="o">=</span> <span class="n">concat</span> <span class="o">.</span> <span class="n">concat</span> <span class="o">$</span> <span class="p">[</span><span class="n">fmap</span> <span class="p">(</span><span class="n">pure</span> <span class="o">$</span><span class="p">)</span> <span class="p">[</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">xk</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span>
+  <span class="o">=</span> <span class="n">concat</span> <span class="o">.</span> <span class="n">concat</span> <span class="o">$</span> <span class="p">[[(</span><span class="n">pure</span> <span class="o">$</span> <span class="n">x1</span><span class="p">),</span> <span class="p">(</span><span class="n">pure</span> <span class="o">$</span> <span class="n">x2</span><span class="p">),</span> <span class="o">...</span><span class="p">,</span> <span class="p">(</span><span class="n">pure</span> <span class="o">$</span> <span class="n">xk</span><span class="p">),</span> <span class="o">...</span><span class="p">]]</span>
+  <span class="o">=</span> <span class="n">concat</span> <span class="o">.</span> <span class="n">concat</span> <span class="o">$</span> <span class="p">[[(</span><span class="n">pure</span> <span class="n">x1</span><span class="p">),</span> <span class="p">(</span><span class="n">pure</span> <span class="n">x2</span><span class="p">),</span> <span class="o">...</span><span class="p">,</span> <span class="p">(</span><span class="n">pure</span> <span class="n">xk</span><span class="p">),</span> <span class="o">...</span><span class="p">]]</span>
+  <span class="o">=</span> <span class="n">concat</span> <span class="o">.</span> <span class="n">concat</span> <span class="o">$</span> <span class="p">[[[</span><span class="n">x1</span><span class="p">],</span> <span class="p">[</span><span class="n">x2</span><span class="p">],</span> <span class="o">...</span><span class="p">,</span> <span class="p">[</span><span class="n">xk</span><span class="p">],</span> <span class="o">...</span><span class="p">]]</span>
+  <span class="o">=</span> <span class="n">concat</span> <span class="o">$</span> <span class="p">[[</span><span class="n">x1</span><span class="p">],</span> <span class="p">[</span><span class="n">x2</span><span class="p">],</span> <span class="o">...</span><span class="p">,</span> <span class="p">[</span><span class="n">xk</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span>
+  <span class="o">=</span> <span class="p">[</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">xk</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+  <span class="o">=</span> <span class="n">xs</span>
+</code></pre></div>
+<p>结合律：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell">    <span class="n">xs</span> <span class="o">&gt;&gt;=</span> <span class="p">(</span><span class="nf">\</span><span class="n">y</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">y</span> <span class="o">&gt;&gt;=</span> <span class="n">g</span><span class="p">)</span>
+  <span class="o">=</span> <span class="n">xs</span> <span class="o">&gt;&gt;=</span> <span class="p">(</span><span class="nf">\</span><span class="n">y</span> <span class="o">-&gt;</span> <span class="n">concat</span> <span class="o">$</span> <span class="n">pure</span> <span class="n">g</span> <span class="o">&lt;*&gt;</span> <span class="n">f</span> <span class="n">y</span><span class="p">)</span>
+  <span class="o">=</span> <span class="n">xs</span> <span class="o">&gt;&gt;=</span> <span class="p">(</span><span class="nf">\</span><span class="n">y</span> <span class="o">-&gt;</span> <span class="n">concat</span> <span class="o">$</span> <span class="p">[</span><span class="n">g</span><span class="p">]</span> <span class="o">&lt;*&gt;</span> <span class="n">f</span> <span class="n">y</span><span class="p">)</span>
+  <span class="o">=</span> <span class="n">xs</span> <span class="o">&gt;&gt;=</span> <span class="p">(</span><span class="nf">\</span><span class="n">y</span> <span class="o">-&gt;</span> <span class="n">concat</span> <span class="p">(</span><span class="n">concat</span> <span class="o">$</span> <span class="n">map</span> <span class="p">(</span><span class="nf">\</span><span class="n">h</span> <span class="o">-&gt;</span> <span class="n">fmap</span> <span class="n">h</span> <span class="p">(</span><span class="n">f</span> <span class="n">y</span><span class="p">))</span> <span class="p">(</span><span class="n">fmap</span> <span class="p">(</span><span class="o">$</span><span class="p">)</span> <span class="p">[</span><span class="n">g</span><span class="p">])))</span>
+  <span class="o">=</span> <span class="n">xs</span> <span class="o">&gt;&gt;=</span> <span class="p">(</span><span class="nf">\</span><span class="n">y</span> <span class="o">-&gt;</span> <span class="n">concat</span> <span class="o">.</span> <span class="n">concat</span> <span class="o">$</span> <span class="n">map</span> <span class="p">(</span><span class="nf">\</span><span class="n">h</span> <span class="o">-&gt;</span> <span class="n">fmap</span> <span class="n">h</span> <span class="p">(</span><span class="n">f</span> <span class="n">y</span><span class="p">))</span> <span class="p">[(</span><span class="n">g</span> <span class="o">$</span><span class="p">)])</span>
+  <span class="o">=</span> <span class="n">xs</span> <span class="o">&gt;&gt;=</span> <span class="p">(</span><span class="nf">\</span><span class="n">y</span> <span class="o">-&gt;</span> <span class="n">concat</span> <span class="o">.</span> <span class="n">concat</span> <span class="o">$</span> <span class="p">[</span><span class="n">fmap</span> <span class="p">(</span><span class="n">g</span> <span class="o">$</span><span class="p">)</span> <span class="p">(</span><span class="n">f</span> <span class="n">y</span><span class="p">)])</span>
+  <span class="o">=</span> <span class="n">xs</span> <span class="o">&gt;&gt;=</span> <span class="p">(</span><span class="nf">\</span><span class="n">y</span> <span class="o">-&gt;</span> <span class="n">concat</span> <span class="o">.</span> <span class="n">concat</span> <span class="o">$</span> <span class="p">[[</span><span class="n">g</span> <span class="n">fy1</span><span class="p">,</span> <span class="n">g</span> <span class="n">fy2</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">g</span> <span class="n">fyk</span><span class="p">,</span> <span class="o">...</span><span class="p">]])</span>
+  <span class="o">=</span> <span class="n">xs</span> <span class="o">&gt;&gt;=</span> <span class="p">(</span><span class="nf">\</span><span class="n">y</span> <span class="o">-&gt;</span> <span class="n">concat</span> <span class="p">[</span><span class="n">g</span> <span class="n">fy1</span><span class="p">,</span> <span class="n">g</span> <span class="n">fy2</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">g</span> <span class="n">fyk</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span>
+  <span class="o">=</span> <span class="n">xs</span> <span class="o">&gt;&gt;=</span> <span class="p">(</span><span class="nf">\</span><span class="n">y</span> <span class="o">-&gt;</span> <span class="n">concat</span> <span class="p">[[</span><span class="n">gfy11</span><span class="p">,</span> <span class="n">gfy12</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">gfy1k</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+                          <span class="p">[</span><span class="n">gfy21</span><span class="p">,</span> <span class="n">gfy22</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">gfy2k</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+                          <span class="o">...</span><span class="p">,</span>
+                          <span class="p">[</span><span class="n">gfyk1</span><span class="p">,</span> <span class="n">gfyk2</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">gfykk</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+                          <span class="o">...</span><span class="p">,])</span>
+  <span class="o">=</span> <span class="n">xs</span> <span class="o">&gt;&gt;=</span> <span class="p">(</span><span class="nf">\</span><span class="n">y</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="n">gfy11</span><span class="p">,</span> <span class="n">gfy12</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">gfy21</span><span class="p">,</span> <span class="n">gfy22</span><span class="p">,</span> <span class="o">...</span> <span class="n">gfyk1</span><span class="p">,</span> <span class="n">gfyk2</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span>
+
+<span class="kr">let</span> <span class="n">gfypq</span> <span class="o">=</span> <span class="p">[</span><span class="n">gfy11</span><span class="p">,</span> <span class="n">gfy12</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">gfy21</span><span class="p">,</span> <span class="n">gfy22</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">gfyk1</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+
+    <span class="n">xs</span> <span class="o">&gt;&gt;=</span> <span class="p">(</span><span class="nf">\</span><span class="n">y</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">y</span> <span class="o">&gt;&gt;=</span> <span class="n">g</span><span class="p">)</span>
+  <span class="o">=</span> <span class="n">xs</span> <span class="o">&gt;&gt;=</span> <span class="p">(</span><span class="nf">\</span><span class="n">y</span> <span class="o">-&gt;</span> <span class="n">gfypq</span><span class="p">)</span>
+  <span class="o">=</span> <span class="n">concat</span> <span class="o">$</span> <span class="p">[</span><span class="nf">\</span><span class="n">y</span> <span class="o">-&gt;</span> <span class="n">gfypq</span><span class="p">]</span> <span class="o">&lt;*&gt;</span> <span class="n">xs</span>
+  <span class="o">=</span> <span class="n">concat</span> <span class="o">.</span> <span class="n">concat</span> <span class="o">$</span> <span class="n">map</span> <span class="p">(</span><span class="nf">\</span><span class="n">h</span> <span class="o">-&gt;</span> <span class="n">fmap</span> <span class="n">h</span> <span class="n">xs</span><span class="p">)</span> <span class="p">(</span><span class="n">fmap</span> <span class="p">(</span><span class="o">$</span><span class="p">)</span> <span class="p">[</span><span class="nf">\</span><span class="n">y</span> <span class="o">-&gt;</span> <span class="n">gfypq</span><span class="p">])</span>
+  <span class="o">=</span> <span class="n">concat</span> <span class="o">.</span> <span class="n">concat</span> <span class="o">$</span> <span class="n">map</span> <span class="p">(</span><span class="nf">\</span><span class="n">h</span> <span class="o">-&gt;</span> <span class="n">fmap</span> <span class="n">h</span> <span class="n">xs</span><span class="p">)</span> <span class="p">[((</span><span class="nf">\</span><span class="n">y</span> <span class="o">-&gt;</span> <span class="n">gfypq</span><span class="p">)</span> <span class="o">$</span><span class="p">)]</span>
+  <span class="o">=</span> <span class="n">concat</span> <span class="o">.</span> <span class="n">concat</span> <span class="o">$</span> <span class="p">[</span><span class="n">fmap</span> <span class="p">((</span><span class="nf">\</span><span class="n">y</span> <span class="o">-&gt;</span> <span class="n">gfypq</span><span class="p">)</span> <span class="o">$</span><span class="p">)</span> <span class="n">xs</span><span class="p">]</span>
+  <span class="o">=</span> <span class="n">concat</span> <span class="o">.</span> <span class="n">concat</span> <span class="o">$</span> <span class="p">[</span><span class="n">fmap</span> <span class="p">((</span><span class="nf">\</span><span class="n">y</span> <span class="o">-&gt;</span> <span class="n">gfypq</span><span class="p">)</span> <span class="o">$</span><span class="p">)</span> <span class="p">[</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">xk</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span>
+  <span class="o">=</span> <span class="n">concat</span> <span class="o">.</span> <span class="n">concat</span> <span class="o">$</span> <span class="p">[[</span><span class="n">gfx1pq</span><span class="p">,</span> <span class="n">gfx2pq</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">gfxkpq</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span>
+  <span class="o">=</span> <span class="n">concat</span> <span class="p">[[</span><span class="n">gfx111</span><span class="p">,</span> <span class="n">gfx112</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">gfx121</span><span class="p">,</span> <span class="n">gfx122</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+            <span class="p">[</span><span class="n">gfx211</span><span class="p">,</span> <span class="n">gfx212</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">gfx221</span><span class="p">,</span> <span class="n">gfx222</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+            <span class="o">...</span><span class="p">,</span>
+            <span class="p">[</span><span class="n">gfxk11</span><span class="p">,</span> <span class="n">gfxk12</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">gfxk21</span><span class="p">,</span> <span class="n">gfxk22</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+            <span class="o">...</span><span class="p">]</span>
+  <span class="o">=</span> <span class="p">[</span><span class="n">gfx111</span><span class="p">,</span> <span class="n">gfx112</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">gfx121</span><span class="p">,</span> <span class="n">gfx122</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">gfxk11</span><span class="p">,</span> <span class="n">gfxk12</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+
+    <span class="p">(</span><span class="n">xs</span> <span class="o">&gt;&gt;=</span> <span class="n">f</span><span class="p">)</span> <span class="o">&gt;&gt;=</span> <span class="n">g</span>
+  <span class="o">=</span> <span class="p">(</span><span class="n">concat</span> <span class="o">$</span> <span class="p">[</span><span class="n">f</span><span class="p">]</span> <span class="o">&lt;*&gt;</span> <span class="n">xs</span><span class="p">)</span> <span class="o">&gt;&gt;=</span> <span class="n">g</span>
+  <span class="o">=</span> <span class="p">(</span><span class="n">concat</span> <span class="o">.</span> <span class="n">concat</span> <span class="o">$</span> <span class="n">map</span> <span class="p">(</span><span class="nf">\</span><span class="n">f</span> <span class="o">-&gt;</span> <span class="n">fmap</span> <span class="n">f</span> <span class="n">xs</span><span class="p">)</span> <span class="p">[(</span><span class="n">f</span> <span class="o">$</span><span class="p">)])</span> <span class="o">&gt;&gt;=</span> <span class="n">g</span>
+  <span class="o">=</span> <span class="p">(</span><span class="n">concat</span> <span class="o">.</span> <span class="n">concat</span> <span class="o">$</span> <span class="p">[</span><span class="n">fmap</span> <span class="p">(</span><span class="n">f</span> <span class="o">$</span><span class="p">)</span> <span class="n">xs</span><span class="p">])</span> <span class="o">&gt;&gt;=</span> <span class="n">g</span>
+  <span class="o">=</span> <span class="p">(</span><span class="n">concat</span> <span class="o">.</span> <span class="n">concat</span> <span class="o">$</span> <span class="p">[[</span><span class="n">f</span> <span class="n">x1</span><span class="p">,</span> <span class="n">f</span> <span class="n">x2</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">f</span> <span class="n">xk</span><span class="p">,</span> <span class="o">...</span><span class="p">]])</span> <span class="o">&gt;&gt;=</span> <span class="n">g</span>
+  <span class="o">=</span> <span class="p">(</span><span class="n">concat</span> <span class="p">[</span><span class="n">f</span> <span class="n">x1</span><span class="p">,</span> <span class="n">f</span> <span class="n">x2</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">f</span> <span class="n">xk</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span> <span class="o">&gt;&gt;=</span> <span class="n">g</span>
+  <span class="o">=</span> <span class="p">(</span><span class="n">concat</span> <span class="p">[[</span><span class="n">fx11</span><span class="p">,</span> <span class="n">fx12</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">fx1k</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+             <span class="p">[</span><span class="n">fx21</span><span class="p">,</span> <span class="n">fx22</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">fx2k</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+             <span class="o">...</span><span class="p">,</span>
+             <span class="p">[</span><span class="n">fxk1</span><span class="p">,</span> <span class="n">fxk2</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">fxkk</span><span class="p">,</span> <span class="o">...</span><span class="p">]])</span> <span class="o">&gt;&gt;=</span> <span class="n">g</span>
+  <span class="o">=</span> <span class="p">[</span><span class="n">fx11</span><span class="p">,</span> <span class="n">fx12</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">fx1k</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">fx21</span><span class="p">,</span> <span class="n">fx22</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">fx2k</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">&gt;&gt;=</span> <span class="n">g</span>
+
+<span class="kr">let</span> <span class="n">fxpq</span> <span class="o">=</span> <span class="p">[</span><span class="n">fx11</span><span class="p">,</span> <span class="n">fx12</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">fx1k</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">fx21</span><span class="p">,</span> <span class="n">fx22</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">fx2k</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+
+    <span class="p">(</span><span class="n">xs</span> <span class="o">&gt;&gt;=</span> <span class="n">f</span><span class="p">)</span> <span class="o">&gt;&gt;=</span> <span class="n">g</span>
+  <span class="o">=</span> <span class="n">fxpq</span> <span class="o">&gt;&gt;=</span> <span class="n">g</span>
+  <span class="o">=</span> <span class="n">concat</span> <span class="o">$</span> <span class="p">[</span><span class="n">g</span><span class="p">]</span> <span class="o">&lt;*&gt;</span> <span class="n">fxpq</span>
+  <span class="o">=</span> <span class="n">concat</span> <span class="o">.</span> <span class="n">concat</span> <span class="o">$</span> <span class="n">map</span> <span class="p">(</span><span class="nf">\</span><span class="n">h</span> <span class="o">-&gt;</span> <span class="n">fmap</span> <span class="n">h</span> <span class="n">fxpq</span><span class="p">)</span> <span class="p">[(</span><span class="n">g</span> <span class="o">$</span><span class="p">)]</span>
+  <span class="o">=</span> <span class="n">concat</span> <span class="o">.</span> <span class="n">concat</span> <span class="o">$</span> <span class="p">[</span><span class="n">fmap</span> <span class="p">(</span><span class="n">g</span> <span class="o">$</span><span class="p">)</span> <span class="n">fxpq</span><span class="p">]</span>
+  <span class="o">=</span> <span class="n">concat</span> <span class="o">.</span> <span class="n">concat</span> <span class="o">$</span> <span class="p">[[</span><span class="n">g</span> <span class="n">fx11</span><span class="p">,</span> <span class="n">g</span> <span class="n">fx12</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">g</span> <span class="n">fx1k</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">g</span> <span class="n">fx21</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span>
+  <span class="o">=</span> <span class="n">concat</span> <span class="p">[</span><span class="n">g</span> <span class="n">fx11</span><span class="p">,</span> <span class="n">g</span> <span class="n">fx12</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">g</span> <span class="n">fx1k</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">g</span> <span class="n">fx21</span><span class="p">,</span> <span class="n">g</span> <span class="n">fx22</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+  <span class="o">=</span> <span class="n">concat</span> <span class="p">[[</span><span class="n">gfx111</span><span class="p">,</span> <span class="n">gfx112</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+            <span class="p">[</span><span class="n">gfx121</span><span class="p">,</span> <span class="n">gfx122</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+            <span class="o">...</span><span class="p">,</span>
+            <span class="p">[</span><span class="n">gfxpq1</span><span class="p">,</span> <span class="n">gfxpq2</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+            <span class="o">...</span><span class="p">]</span>
+  <span class="o">=</span> <span class="p">[</span><span class="n">gfx111</span><span class="p">,</span> <span class="n">gfx112</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">gfx121</span><span class="p">,</span> <span class="n">gfx122</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">gfxpq1</span><span class="p">,</span> <span class="n">gfxpq2</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+  <span class="o">=</span> <span class="n">xs</span> <span class="o">&gt;&gt;=</span> <span class="p">(</span><span class="nf">\</span><span class="n">y</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">y</span> <span class="o">&gt;&gt;=</span> <span class="n">g</span><span class="p">)</span>
+</code></pre></div>
+<p>如果用更简单的<code>(&gt;&gt;=)</code>实现（比如<code>base</code>包里给出的使用列表解析的实现），结合律的证明可能不会这么复杂。</p>
+
+<h3>实现<code>((-&gt;) e)</code>的单子实例</h3>
+
+<p><code>((-&gt;) e)</code>的函子实例前面已经实现过，这里不再重复。</p>
+
+<p>首先来实现<code>((-&gt;) e)</code>的Applicative实例，<code>pure</code>很trivial：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">pure</span> <span class="n">x</span> <span class="o">=</span> <span class="nf">\</span><span class="kr">_</span> <span class="o">-&gt;</span> <span class="n">x</span>
+<span class="c1">-- or</span>
+<span class="n">pure</span> <span class="o">=</span> <span class="n">const</span>
+</code></pre></div>
+<p>接下来看<code>(&lt;*&gt;)</code>特化为<code>((-&gt;) e)</code>的类型：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="p">(</span><span class="o">&lt;*&gt;</span><span class="p">)</span> <span class="o">::</span> <span class="p">((</span><span class="o">-&gt;</span><span class="p">)</span> <span class="n">e</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="p">((</span><span class="o">-&gt;</span><span class="p">)</span> <span class="n">e</span> <span class="n">a</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">((</span><span class="o">-&gt;</span><span class="p">)</span> <span class="n">e</span> <span class="n">b</span><span class="p">)</span>
+<span class="c1">-- i.e.</span>
+<span class="p">(</span><span class="o">&lt;*&gt;</span><span class="p">)</span> <span class="o">::</span> <span class="p">(</span><span class="n">e</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">e</span> <span class="o">-&gt;</span> <span class="n">a</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">e</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">)</span>
+<span class="c1">-- 由于(-&gt;)是右结合的</span>
+<span class="p">(</span><span class="o">&lt;*&gt;</span><span class="p">)</span> <span class="o">::</span> <span class="p">(</span><span class="n">e</span> <span class="o">-&gt;</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">e</span> <span class="o">-&gt;</span> <span class="n">a</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">e</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">)</span>
+</code></pre></div>
+<p>沿着这个类型，它的具体实现就很清楚了，<code>f :: e -&gt; a -&gt; b</code>，<code>g :: e -&gt; a</code>，我们要得到一个<code>e -&gt; b</code>类型的返回值，首先要做的是创建一个接受一个<code>e</code>的函数，即<code>\e -&gt; ???</code>。然后使用<code>g e</code>获得一个<code>a</code>类型的值。根据之前的推理，将这个<code>a</code>类型的值与<code>e</code>一起作用于<code>f</code>可以得到一个<code>b</code>，即</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">f</span> <span class="o">&lt;*&gt;</span> <span class="n">g</span> <span class="o">=</span> <span class="nf">\</span><span class="n">e</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">e</span> <span class="p">(</span><span class="n">g</span> <span class="n">e</span><span class="p">)</span>
+</code></pre></div>
+<p>如果你看Haskell的源码，你会发现其实它是这么实现的：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="p">(</span><span class="o">&lt;*&gt;</span><span class="p">)</span> <span class="o">::</span> <span class="p">(</span><span class="n">e</span> <span class="o">-&gt;</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">e</span> <span class="o">-&gt;</span> <span class="n">a</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">e</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">)</span>
+<span class="c1">-- 由于(-&gt;)右结合</span>
+<span class="p">(</span><span class="o">&lt;*&gt;</span><span class="p">)</span> <span class="o">::</span> <span class="p">(</span><span class="n">e</span> <span class="o">-&gt;</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">e</span> <span class="o">-&gt;</span> <span class="n">a</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">e</span> <span class="o">-&gt;</span> <span class="n">b</span>
+</code></pre></div>
+<p>这也就告诉我们，上面的式子可以这么写：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="p">(</span><span class="o">&lt;*&gt;</span><span class="p">)</span> <span class="n">f</span> <span class="n">g</span> <span class="n">e</span> <span class="o">=</span> <span class="n">f</span> <span class="n">e</span> <span class="p">(</span><span class="n">g</span> <span class="n">e</span><span class="p">)</span>
+</code></pre></div>
+<p>下面实现<code>((-&gt;) e)</code>的单子实例：它的<code>(&gt;&gt;=)</code>类型应该是</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="p">(</span><span class="o">&gt;&gt;=</span><span class="p">)</span> <span class="o">::</span> <span class="p">((</span><span class="o">-&gt;</span><span class="p">)</span> <span class="n">e</span> <span class="n">a</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="p">((</span><span class="o">-&gt;</span><span class="p">)</span> <span class="n">e</span> <span class="n">b</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="p">((</span><span class="o">-&gt;</span><span class="p">)</span> <span class="n">e</span> <span class="n">b</span><span class="p">)</span>
+<span class="c1">-- =&gt;</span>
+<span class="p">(</span><span class="o">&gt;&gt;=</span><span class="p">)</span> <span class="o">::</span> <span class="p">(</span><span class="n">e</span> <span class="o">-&gt;</span> <span class="n">a</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">e</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">e</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">)</span>
+<span class="c1">-- =&gt;</span>
+<span class="p">(</span><span class="o">&gt;&gt;=</span><span class="p">)</span> <span class="o">::</span> <span class="p">(</span><span class="n">e</span> <span class="o">-&gt;</span> <span class="n">a</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">e</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">e</span> <span class="o">-&gt;</span> <span class="n">b</span>
+</code></pre></div>
+<p>那么</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="kr">instance</span> <span class="kt">Monad</span> <span class="p">((</span><span class="o">-&gt;</span><span class="p">)</span> <span class="n">e</span><span class="p">)</span> <span class="kr">where</span>
+  <span class="p">(</span><span class="o">&gt;&gt;=</span><span class="p">)</span> <span class="n">f</span> <span class="n">g</span> <span class="n">e</span> <span class="o">=</span> <span class="n">g</span> <span class="p">(</span><span class="n">f</span> <span class="n">e</span><span class="p">)</span> <span class="n">e</span>
+  <span class="c1">-- or f &gt;&gt;= g = \e -&gt; g (f e) e</span>
+</code></pre></div>
+<p>接下来检查这个实现的性质：</p>
+
+<p>左恒等律：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell">    <span class="n">return</span> <span class="n">f</span> <span class="o">&gt;&gt;=</span> <span class="n">g</span>
+  <span class="o">=</span> <span class="n">pure</span> <span class="n">f</span> <span class="o">&gt;&gt;=</span> <span class="n">g</span>
+  <span class="o">=</span> <span class="p">(</span><span class="nf">\</span><span class="kr">_</span> <span class="o">-&gt;</span> <span class="n">f</span><span class="p">)</span> <span class="o">&gt;&gt;=</span> <span class="n">g</span>
+  <span class="o">=</span> <span class="nf">\</span><span class="n">e</span> <span class="o">-&gt;</span> <span class="n">g</span> <span class="p">((</span><span class="nf">\</span><span class="kr">_</span> <span class="o">-&gt;</span> <span class="n">f</span><span class="p">)</span> <span class="n">e</span><span class="p">)</span> <span class="n">e</span>
+  <span class="o">=</span> <span class="nf">\</span><span class="n">e</span> <span class="o">-&gt;</span> <span class="n">g</span> <span class="n">f</span> <span class="n">e</span>
+  <span class="o">=</span> <span class="n">g</span> <span class="n">f</span>
+</code></pre></div>
+<p>右恒等律：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell">    <span class="n">f</span> <span class="o">&gt;&gt;=</span> <span class="n">return</span>
+  <span class="o">=</span> <span class="n">f</span> <span class="o">&gt;&gt;=</span> <span class="n">pure</span>
+  <span class="o">=</span> <span class="nf">\</span><span class="n">e</span> <span class="o">-&gt;</span> <span class="n">pure</span> <span class="p">(</span><span class="n">f</span> <span class="n">e</span><span class="p">)</span> <span class="n">e</span>
+  <span class="o">=</span> <span class="n">pure</span> <span class="p">(</span><span class="n">f</span> <span class="n">e</span><span class="p">)</span>
+  <span class="o">=</span> <span class="nf">\</span><span class="n">e</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="nf">\</span><span class="kr">_</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">e</span><span class="p">)</span> <span class="n">e</span>
+  <span class="o">=</span> <span class="nf">\</span><span class="n">e</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">e</span>
+  <span class="o">=</span> <span class="n">f</span>
+</code></pre></div>
+<p>结合律：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell">    <span class="n">f</span> <span class="o">&gt;&gt;=</span> <span class="p">(</span><span class="nf">\</span><span class="n">t</span> <span class="o">-&gt;</span> <span class="n">g</span> <span class="n">t</span> <span class="o">&gt;&gt;=</span> <span class="n">h</span><span class="p">)</span>
+  <span class="o">=</span> <span class="n">f</span> <span class="o">&gt;&gt;=</span> <span class="p">(</span><span class="nf">\</span><span class="n">t</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="nf">\</span><span class="n">e</span> <span class="o">-&gt;</span> <span class="n">h</span> <span class="p">(</span><span class="n">g</span> <span class="n">t</span> <span class="n">e</span><span class="p">)</span> <span class="n">e</span><span class="p">))</span>
+  <span class="o">=</span> <span class="n">f</span> <span class="o">&gt;&gt;=</span> <span class="p">(</span><span class="nf">\</span><span class="n">t</span> <span class="n">e</span> <span class="o">-&gt;</span> <span class="n">h</span> <span class="p">(</span><span class="n">g</span> <span class="n">t</span> <span class="n">e</span><span class="p">)</span> <span class="n">e</span><span class="p">)</span> <span class="c1">-- uncurry</span>
+  <span class="o">=</span> <span class="nf">\</span><span class="n">e'</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="nf">\</span><span class="n">t</span> <span class="n">e</span> <span class="o">-&gt;</span> <span class="n">h</span> <span class="p">(</span><span class="n">g</span> <span class="n">t</span> <span class="n">e</span><span class="p">)</span> <span class="n">e</span><span class="p">)</span> <span class="p">(</span><span class="n">f</span> <span class="n">e'</span><span class="p">)</span> <span class="n">e'</span>
+  <span class="o">=</span> <span class="nf">\</span><span class="n">e'</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="nf">\</span><span class="n">e</span> <span class="o">-&gt;</span> <span class="n">h</span> <span class="p">(</span><span class="n">g</span> <span class="p">(</span><span class="n">f</span> <span class="n">e'</span><span class="p">)</span> <span class="n">e</span><span class="p">)</span> <span class="n">e</span><span class="p">)</span> <span class="n">e'</span>
+  <span class="o">=</span> <span class="nf">\</span><span class="n">e'</span> <span class="o">-&gt;</span> <span class="n">h</span> <span class="p">(</span><span class="n">g</span> <span class="p">(</span><span class="n">f</span> <span class="n">e'</span><span class="p">)</span> <span class="n">e'</span><span class="p">)</span> <span class="n">e'</span>
+  <span class="o">=</span> <span class="nf">\</span><span class="n">e'</span> <span class="o">-&gt;</span> <span class="n">h</span> <span class="p">((</span><span class="nf">\</span><span class="n">k</span> <span class="o">-&gt;</span> <span class="n">g</span> <span class="p">(</span><span class="n">f</span> <span class="n">k</span><span class="p">)</span> <span class="n">k</span><span class="p">)</span> <span class="n">e'</span><span class="p">)</span> <span class="n">e'</span>
+  <span class="o">=</span> <span class="p">(</span><span class="nf">\</span><span class="n">k</span> <span class="o">-&gt;</span> <span class="n">g</span> <span class="p">(</span><span class="n">f</span> <span class="n">k</span><span class="p">)</span> <span class="n">k</span><span class="p">)</span> <span class="o">&gt;&gt;=</span> <span class="n">h</span> <span class="c1">-- \e' -&gt; h (K e') e' = K &gt;&gt;= h</span>
+  <span class="o">=</span> <span class="p">(</span><span class="n">f</span> <span class="o">&gt;&gt;=</span> <span class="n">g</span><span class="p">)</span> <span class="o">&gt;&gt;=</span> <span class="n">h</span>         <span class="c1">-- 同理</span>
+</code></pre></div>
+<h3>实现以下数据类型的函子与单子</h3>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="c1">-- Functor f =&gt;</span>
+<span class="kr">data</span> <span class="kt">Free</span> <span class="n">f</span> <span class="n">a</span> <span class="o">=</span> <span class="kt">Var</span> <span class="n">a</span>
+              <span class="o">|</span> <span class="kt">Node</span> <span class="p">(</span><span class="n">f</span> <span class="p">(</span><span class="kt">Free</span> <span class="n">f</span> <span class="n">a</span><span class="p">))</span>
+</code></pre></div>
+<p>既然我们在实现关于<code>Free f</code>的函子实例，我们就可以假设它是一个函子。那么对于<code>Free f a</code>，它的<code>fmap</code>的类型是</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">fmap</span> <span class="o">::</span> <span class="kt">Functor</span> <span class="n">f</span> <span class="o">=&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Free</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="kt">Free</span> <span class="n">f</span> <span class="n">b</span>
+</code></pre></div>
+<p>对于<code>Var a</code>，<code>fmap</code>很简单</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">g</span> <span class="p">`</span><span class="n">fmap</span><span class="p">`</span> <span class="kt">Var</span> <span class="n">x</span> <span class="o">=</span> <span class="kt">Var</span> <span class="o">$</span> <span class="n">g</span> <span class="n">x</span>
+</code></pre></div>
+<p>对于<code>Node t</code>，我们可以观察出来，<code>a</code>实际上是裹在两层函子里的，即首先它裹在<code>Free f a</code>这一个函子里，同时这个函子又裹在<code>f</code>这个函子里，那么根据之前的结论，去访问裹在两层函子里的值，我们用<code>fmap . fmap</code>，即</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">g</span> <span class="p">`</span><span class="n">fmap</span><span class="p">`</span> <span class="kt">Node</span> <span class="n">t</span> <span class="o">=</span> <span class="kt">Node</span> <span class="o">$</span> <span class="p">(</span><span class="n">fmap</span> <span class="o">.</span> <span class="n">fmap</span><span class="p">)</span> <span class="n">g</span> <span class="n">t</span>
+</code></pre></div>
+<p>接下来实现<code>Free f a</code>的Applicative实例：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">pure</span> <span class="o">::</span> <span class="kt">Functor</span> <span class="n">f</span> <span class="o">=&gt;</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="kt">Free</span> <span class="n">f</span> <span class="n">a</span>
+<span class="c1">-- =&gt;</span>
+<span class="n">pure</span> <span class="o">=</span> <span class="kt">Var</span>
+
+<span class="p">(</span><span class="o">&lt;*&gt;</span><span class="p">)</span> <span class="o">::</span> <span class="kt">Functor</span> <span class="n">f</span> <span class="o">=&gt;</span> <span class="kt">Free</span> <span class="n">f</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Free</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="kt">Free</span> <span class="n">f</span> <span class="n">b</span>
+<span class="c1">-- =&gt;</span>
+<span class="kt">Var</span> <span class="n">f</span> <span class="o">&lt;*&gt;</span> <span class="n">free</span> <span class="o">=</span> <span class="n">fmap</span> <span class="n">f</span> <span class="n">free</span>
+<span class="kt">Node</span> <span class="n">t</span> <span class="o">&lt;*&gt;</span> <span class="n">free</span> <span class="o">=</span> <span class="o">???</span>
+</code></pre></div>
+<p>接下来考虑<code>Node t</code>的情况，这里的<code>t</code>实际上是一个<code>f (Free f (a -&gt; b))</code>（观察它的<code>data</code>定义的第二句<code>Node (f (Free f a))</code>），即</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">t</span> <span class="o">::</span> <span class="kt">Functor</span> <span class="o">=&gt;</span> <span class="n">f</span> <span class="n">t'</span>
+  <span class="kr">where</span> <span class="n">t'</span> <span class="o">::</span> <span class="kt">Free</span> <span class="n">f</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">)</span>
+</code></pre></div>
+<p>而<code>free</code>则是一个<code>Free f a</code>，我们要解决的问题就是将<code>a -&gt; b</code>应用到<code>a</code>上。我们最自然的想法，是递归地利用<code>(&lt;*&gt;)</code>使得<code>t</code>中的<code>t&#39; :: Free f (a -&gt; b)</code>能够与<code>Free f a</code>作用，即我们想要得到<code>t&#39; &lt;*&gt; free</code>。</p>
+
+<p>然而<code>t&#39;</code>我们是不能直接得到的，它还裹在一个<code>f</code>中。回想起<code>fmap</code>的另一种理解方式：它将一个函数提升至对应的函子上下文中，即：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">fmap</span> <span class="o">::</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">b</span>
+<span class="n">fmap</span> <span class="n">f</span> <span class="o">::</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">b</span>
+</code></pre></div>
+<p>那么我们可以利用函子<code>f</code>的<code>fmap</code>将<code>(&lt;*&gt; free)</code>提升至函子<code>f</code>中，得到一个提升过的函数，再将<code>t</code>应用于这个函数上。更具体地，我们可以特化这其中的<code>a</code>为<code>Free f c</code>，<code>b</code>为<code>Free f d</code>，得到下面的类型</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">fmap</span> <span class="o">::</span> <span class="p">(</span><span class="kt">Free</span> <span class="n">f</span> <span class="n">c</span> <span class="o">-&gt;</span> <span class="kt">Free</span> <span class="n">f</span> <span class="n">d</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="p">(</span><span class="kt">Free</span> <span class="n">f</span> <span class="n">c</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="p">(</span><span class="kt">Free</span> <span class="n">f</span> <span class="n">d</span><span class="p">)</span>
+<span class="c1">-- 将c换为a -&gt; b，d换为b</span>
+<span class="n">fmap</span> <span class="o">::</span> <span class="p">(</span><span class="kt">Free</span> <span class="n">f</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Free</span> <span class="n">f</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="p">(</span><span class="kt">Free</span> <span class="n">f</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="p">(</span><span class="kt">Free</span> <span class="n">f</span> <span class="n">b</span><span class="p">)</span>
+
+<span class="c1">-- 而</span>
+<span class="p">(</span><span class="o">&lt;*&gt;</span><span class="p">)</span> <span class="o">::</span> <span class="kt">Functor</span> <span class="n">f</span> <span class="o">=&gt;</span> <span class="kt">Free</span> <span class="n">f</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Free</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="kt">Free</span> <span class="n">f</span> <span class="n">b</span>
+<span class="p">(</span><span class="o">&lt;*&gt;</span> <span class="n">free</span><span class="p">)</span> <span class="o">::</span> <span class="kt">Functor</span> <span class="n">f</span> <span class="o">=&gt;</span> <span class="kt">Free</span> <span class="n">f</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Free</span> <span class="n">f</span> <span class="n">b</span> 
+
+<span class="c1">-- 则</span>
+<span class="n">fmap</span> <span class="p">(</span><span class="o">&lt;*&gt;</span> <span class="n">free</span><span class="p">)</span> <span class="o">::</span> <span class="n">f</span> <span class="p">(</span><span class="kt">Free</span> <span class="n">f</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="p">(</span><span class="kt">Free</span> <span class="n">f</span> <span class="n">b</span><span class="p">)</span>
+</code></pre></div>
+<p>这样，我们就可以把<code>t</code>应用于上面得到的式子：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="kt">Node</span> <span class="n">t</span> <span class="o">&lt;*&gt;</span> <span class="n">free</span> <span class="o">=</span> <span class="kt">Node</span> <span class="o">$</span> <span class="n">fmap</span> <span class="p">(</span><span class="o">&lt;*&gt;</span> <span class="n">free</span><span class="p">)</span> <span class="n">t</span>
+</code></pre></div>
+<p>接下来实现<code>Free f a</code>的单子实例：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="kr">instance</span> <span class="kt">Monad</span> <span class="p">(</span><span class="kt">Free</span> <span class="n">f</span><span class="p">)</span> <span class="kr">where</span>
+  <span class="kt">Var</span> <span class="n">a</span> <span class="o">&gt;&gt;=</span> <span class="n">f</span> <span class="o">=</span> <span class="n">f</span> <span class="n">a</span>
+  <span class="kt">Node</span> <span class="n">t</span> <span class="o">&gt;&gt;=</span> <span class="n">f</span> <span class="o">=</span> <span class="o">...</span>
+</code></pre></div>
+<p>关于<code>Node t</code>，同样的</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">t</span> <span class="o">::</span> <span class="kt">Functor</span> <span class="n">f</span> <span class="o">=&gt;</span> <span class="n">f</span> <span class="n">t'</span>
+  <span class="kr">where</span> <span class="n">t'</span> <span class="o">::</span> <span class="kt">Free</span> <span class="n">f</span> <span class="n">a</span>
+
+<span class="n">f</span> <span class="o">::</span> <span class="kt">Functor</span> <span class="n">f</span> <span class="o">=&gt;</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="kt">Free</span> <span class="n">f</span> <span class="n">b</span>
+</code></pre></div>
+<p>而<code>(&gt;&gt;=)</code>的类型为：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="p">(</span><span class="o">&gt;&gt;=</span><span class="p">)</span> <span class="o">::</span> <span class="kt">Functor</span> <span class="n">f</span> <span class="o">=&gt;</span> <span class="kt">Free</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="kt">Free</span> <span class="n">f</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Free</span> <span class="n">f</span> <span class="n">b</span>
+</code></pre></div>
+<p>则我们自然地想到，可以递归地利用<code>(&gt;&gt;=)</code>，来让<code>t&#39; &gt;&gt;= f</code>，然而<code>t&#39;</code>仍然裹在一层函子<code>f</code>中，那么简单地利用函子<code>f</code>的<code>fmap</code>将<code>(&gt;&gt;= f)</code>提升至函子<code>f</code>中即可，即</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="kt">Node</span> <span class="n">t</span> <span class="o">&gt;&gt;=</span> <span class="n">f</span> <span class="o">=</span> <span class="kt">Node</span> <span class="o">$</span> <span class="n">fmap</span> <span class="p">(</span><span class="o">&gt;&gt;=</span> <span class="n">f</span><span class="p">)</span> <span class="n">t</span>
+</code></pre></div>
+<p>至此，<code>Free f a</code>的单子实例的推导结束。</p>
+
+<p>可以看到，在上面的推导中，我们打了大量的类型运算的草稿，并且通过这些类型，我们能够对具体的实现有一种直观上的感受。通过类型运算来指引具体的实现在Haskell中是很重要的一个技巧。</p>
+
+<p>接下来检查该实现是否符合各个单子律：</p>
+
+<p>左恒等律：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell">    <span class="n">return</span> <span class="p">(</span><span class="kt">Var</span> <span class="n">a</span><span class="p">)</span> <span class="o">&gt;&gt;=</span> <span class="n">k</span>
+  <span class="o">=</span> <span class="n">pure</span> <span class="p">(</span><span class="kt">Var</span> <span class="n">a</span><span class="p">)</span> <span class="o">&gt;&gt;=</span> <span class="n">k</span>
+  <span class="o">=</span> <span class="kt">Var</span> <span class="p">(</span><span class="kt">Var</span> <span class="n">a</span><span class="p">)</span> <span class="o">&gt;&gt;=</span> <span class="n">k</span>
+  <span class="o">=</span> <span class="n">k</span> <span class="p">(</span><span class="kt">Var</span> <span class="n">a</span><span class="p">)</span>
+
+    <span class="n">return</span> <span class="p">(</span><span class="kt">Node</span> <span class="n">t</span><span class="p">)</span> <span class="o">&gt;&gt;=</span> <span class="n">k</span>
+  <span class="o">=</span> <span class="kt">Var</span> <span class="p">(</span><span class="kt">Node</span> <span class="n">t</span><span class="p">)</span> <span class="o">&gt;&gt;=</span> <span class="n">k</span>
+  <span class="o">=</span> <span class="n">k</span> <span class="p">(</span><span class="kt">Node</span> <span class="n">t</span><span class="p">)</span>
+</code></pre></div>
+<p>右恒等律：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell">    <span class="kt">Var</span> <span class="n">a</span> <span class="o">&gt;&gt;=</span> <span class="n">return</span>
+  <span class="o">=</span> <span class="kt">Var</span> <span class="n">a</span> <span class="o">&gt;&gt;=</span> <span class="kt">Var</span>
+  <span class="o">=</span> <span class="kt">Var</span> <span class="n">a</span>
+
+    <span class="kt">Node</span> <span class="n">t</span> <span class="o">&gt;&gt;=</span> <span class="n">return</span>
+  <span class="o">=</span> <span class="kt">Node</span> <span class="n">t</span> <span class="o">&gt;&gt;=</span> <span class="kt">Var</span>
+  <span class="o">=</span> <span class="kt">Node</span> <span class="o">$</span> <span class="n">fmap</span> <span class="p">(</span><span class="o">&gt;&gt;=</span> <span class="kt">Var</span><span class="p">)</span> <span class="n">t</span>
+
+<span class="c1">-- 若 t = f (Var a)，则</span>
+    <span class="kt">Node</span> <span class="n">t</span> <span class="o">&gt;&gt;=</span> <span class="n">return</span>
+  <span class="o">=</span> <span class="kt">Node</span> <span class="o">$</span> <span class="n">fmap</span> <span class="p">(</span><span class="o">&gt;&gt;=</span> <span class="kt">Var</span><span class="p">)</span> <span class="n">t</span>
+  <span class="o">=</span> <span class="kt">Node</span> <span class="o">$</span> <span class="n">fmap</span> <span class="p">(</span><span class="nf">\</span><span class="kr">_</span> <span class="o">-&gt;</span> <span class="kt">Var</span> <span class="n">a</span> <span class="o">&gt;&gt;=</span> <span class="kt">Var</span><span class="p">)</span> <span class="n">t</span>
+  <span class="o">=</span> <span class="kt">Node</span> <span class="o">$</span> <span class="n">t</span> <span class="c1">-- 请通过类型运算让自己相信这一步是正确的</span>
+  <span class="o">=</span> <span class="kt">Node</span> <span class="n">t</span>
+
+<span class="c1">-- 若 t = f (Node u)，则</span>
+    <span class="kt">Node</span> <span class="n">t</span> <span class="o">&gt;&gt;=</span> <span class="n">return</span>
+  <span class="o">=</span> <span class="kt">Node</span> <span class="o">$</span> <span class="n">fmap</span> <span class="p">(</span><span class="nf">\</span><span class="kr">_</span> <span class="o">-&gt;</span> <span class="kt">Node</span> <span class="n">u</span> <span class="o">&gt;&gt;=</span> <span class="kt">Var</span><span class="p">)</span> <span class="n">t</span>
+
+<span class="c1">-- 递归至第一步，如果t有穷（其递归结构终止于Var a）,则</span>
+    <span class="kt">Node</span> <span class="n">t</span> <span class="o">&gt;&gt;=</span> <span class="n">return</span>
+  <span class="o">=</span> <span class="kt">Node</span> <span class="o">$</span> <span class="n">t</span> <span class="c1">-- 请通过类型运算让自己相信这一步是正确的</span>
+  <span class="o">=</span> <span class="kt">Node</span> <span class="n">t</span>
+</code></pre></div>
+<p>结合律：太复杂，在简单的方法里我证明不出来。</p>
+
+<h3>利用<code>fmap</code>和<code>join</code>实现<code>(&gt;&gt;=)</code></h3>
+
+<p>首先检查他们的类型：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">fmap</span> <span class="o">::</span> <span class="kt">Functor</span> <span class="n">m</span> <span class="o">=&gt;</span> <span class="p">(</span><span class="n">x</span> <span class="o">-&gt;</span> <span class="n">y</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">m</span> <span class="n">x</span> <span class="o">-&gt;</span> <span class="n">m</span> <span class="n">y</span>
+<span class="n">join</span> <span class="o">::</span> <span class="kt">Monad</span> <span class="n">m</span> <span class="o">=&gt;</span> <span class="n">m</span> <span class="p">(</span><span class="n">m</span> <span class="n">a</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">m</span> <span class="n">a</span>
+<span class="p">(</span><span class="o">&gt;&gt;=</span><span class="p">)</span> <span class="o">::</span> <span class="kt">Monad</span> <span class="n">m</span> <span class="o">=&gt;</span> <span class="n">m</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">m</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">m</span> <span class="n">b</span>
+</code></pre></div>
+<p>然后检查已知量：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">m</span> <span class="o">&gt;&gt;=</span> <span class="n">f</span> <span class="o">::</span> <span class="kt">Monad</span> <span class="n">m</span> <span class="o">=&gt;</span> <span class="n">m</span> <span class="n">b</span>
+  <span class="kr">where</span> <span class="n">m</span> <span class="o">::</span> <span class="n">m</span> <span class="n">a</span>
+        <span class="n">f</span> <span class="o">::</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">m</span> <span class="n">b</span>
+</code></pre></div>
+<p>看到<code>f :: a -&gt; m b</code>和<code>fmap</code>的第一个参数，不妨将<code>y</code>特化为<code>m b</code>，那么就有</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">fmap</span> <span class="o">::</span> <span class="kt">Functor</span> <span class="n">m</span> <span class="o">=&gt;</span> <span class="p">(</span><span class="n">x</span> <span class="o">-&gt;</span> <span class="n">m</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">m</span> <span class="n">x</span> <span class="o">-&gt;</span> <span class="n">m</span> <span class="p">(</span><span class="n">m</span> <span class="n">b</span><span class="p">)</span>
+</code></pre></div>
+<p>看到这样的返回值类型就能很自然地将<code>join</code>联想起来了：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">m</span> <span class="o">&gt;&gt;=</span> <span class="n">f</span> <span class="o">=</span> <span class="n">join</span> <span class="p">(</span><span class="n">fmap</span> <span class="n">f</span> <span class="n">m</span><span class="p">)</span>
+</code></pre></div>
+</section>
+<section class="meta">
+
+<br/>
+<br/>
+<span>
+	<a  href="http://qwert42.github.io/2016/01/21/a/" class="pageNav"  >Previous</a>
+	&nbsp;&nbsp;&nbsp;
+	<a   class="pageNavInvalid"  >Next</a>
+</span>
+<hr>
+<span class="author">
+  <a href="http://mad4alcohol.github.com">qwert42</a>
+</span>
+<span class="time">
+  /
+  <time datetime="2016-01-26">2016-01-26</time>
+</span>
+<br />
+<span class="license">
+  Published under <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/3.0/">(CC) BY-NC-SA</a>
+</span>
+</section>
+<!-- Duoshuo Comment BEGIN -->
+	<div class="ds-thread" data-thread-key="/2016/01/26/solutions-to-exercises-in-typeclassopedia"
+         data-title="Solutions to exercises in Typeclassopedia"></div>
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"m4ablog"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = 'http://static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		|| document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- Duoshuo Comment END -->
+
+
+<!--
+<script type="text/javascript">
+$(function(){
+  $(document).keydown(function(e) {
+    var url = false;
+        if (e.which == 37 || e.which == 74) {  // Left arrow and J
+            
+        url = 'http://qwert42.github.io/2016/01/21/a/';
+        
+        }
+        else if (e.which == 39 || e.which == 75) {  // Right arrow and K
+            
+        }
+        if (url) {
+            window.location = url;
+        }
+  });
+})
+</script>
+-->
+
+
+        </article>
+        <a style="position:fixed;bottom:5px;right:5px;" href="#" title="Back to Top">
+            <img src="/assets/images/btt.png" />
+        </a> 
+      </div>
+
+    <footer>
+    <p><small>Powered by <a href="https://github.com/mojombo/jekyll">Jekyll</a> & <a href="http://pages.github.com">GitHub</a> | Copyright 2012 - 2016 by <a href="/about/">qwert42</a> | <span class="label label-info" id="timeSpan"></span></small></p>
+    </footer>
+
+    </div>
+
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-33748333-1']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+  </body>
+</html>

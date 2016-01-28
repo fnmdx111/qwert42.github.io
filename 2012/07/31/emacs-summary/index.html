@@ -81,7 +81,6 @@
 <li>了解lisp的基本知识，比如这种<em>奇怪</em>的语法（<a href="http://en.wikipedia.org/wiki/S-expression">S-expression</a>）是怎么回事，最开始可能不习惯，但是习惯之后，你就会明白这种语法的表达力有多强大（通过宏来体现出数据即代码，代码即数据）。</li>
 </ul>
 
-
 <p>接下来，开始<em>一块一块</em>地来看<code>.emacs</code>（即vim里的<code>.vimrc</code>）。</p>
 
 <h2>哦，对了，首先要说的是.emacs放哪</h2>
@@ -89,7 +88,8 @@
 <p>*nix就不说了，大家都知道。但是windows的情况就要复杂点了。
 我先是稍微在网上搜了一下，说在<code>C:/Users/xxx/AppData/Roaming/.emacs.d</code>里建一个<code>init.el</code>。我试了，不行。（怎么试？就加一句<code>(tool-bar-mode -1)</code>，然后重启emacs看看有变化没。）百撕不得骑姐（大误）之后，还是打算换个关键字，用英语搜吧。果然搜到了一个关于windows的<a href="http://www.gnu.org/software/emacs/windows/Installing-Emacs.html#index-HOME-directory-49">faq</a>，里面的3.5节对确定主文件夹的机制讲得很清楚：</p>
 
-<blockquote><ol>
+<blockquote>
+<ol>
 <li>如果设置了<code>HOME</code>环境变量，那么就用<code>HOME</code>指代的文件夹。</li>
 <li>如果注册表有<code>HKCU\SOFTWARE\GNU\Emacs\HOME</code>这一项，那么就用它指代的文件夹。</li>
 <li>如果注册表有<code>HKLM\SOFTWARE\GNU\Emacs\HOME</code>这一项，那么就用它指代的文件夹。不推荐，因为它会让多个用户共享同一个主文件夹。</li>
@@ -100,7 +100,9 @@
 
 <p>后面还有一句</p>
 
-<blockquote><p>在Emacs中，一个文件名开头处的&lt;~>会被展开为你的主文件夹，所以你总是可以用<code>C-x C-f ~/.emacs</code>找到你的<code>.emacs</code>文件。</p></blockquote>
+<blockquote>
+<p>在Emacs中，一个文件名开头处的&lt;~&gt;会被展开为你的主文件夹，所以你总是可以用<code>C-x C-f ~/.emacs</code>找到你的<code>.emacs</code>文件。</p>
+</blockquote>
 
 <p>我是直接用的第一个方法弄的，果然好使（还是官方文档靠谱啊）。</p>
 
@@ -109,99 +111,99 @@
 <p>首先得设置好语言环境（应该就是总编码的意思），
 用以下代码设置</p>
 
-<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1</pre></td><td class="code"><pre><span class="p">(</span><span class="nv">set-language-environment</span> <span class="ss">'utf-8</span><span class="p">)</span><span class="w">
-</span></pre></td></tr></tbody></table></code></pre></figure></p>
+<figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1</pre></td><td class="code"><pre><span class="p">(</span><span class="nv">set-language-environment</span> <span class="ss">'utf-8</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure>
 
-<p>其中<code>'utf-8</code>表示的是一个引用（quote），表示一个唯一确定的标识，跟java里的枚举类型有点类似。</p>
+<p>其中<code>&#39;utf-8</code>表示的是一个引用（quote），表示一个唯一确定的标识，跟java里的枚举类型有点类似。</p>
 
 <p>然后设置汉字的渲染，
 我在google上搜过，得到的结论是强制设定一个字体应该能解决问题，在<a href="http://emacser.com/torture-emacs.htm">这篇文章</a>里copy了一段代码</p>
 
-<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+<figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
 2
 3
 4</pre></td><td class="code"><pre><span class="p">(</span><span class="nb">dolist</span> <span class="p">(</span><span class="nv">charset</span> <span class="o">'</span><span class="p">(</span><span class="nv">kana</span> <span class="nv">han</span> <span class="nc">symbol</span> <span class="nv">cjk-misc</span> <span class="nv">bopomofo</span><span class="p">))</span>
   <span class="p">(</span><span class="nv">set-fontset-font</span> <span class="p">(</span><span class="nv">frame-parameter</span> <span class="no">nil</span> <span class="ss">'font</span><span class="p">)</span>
                     <span class="nv">charset</span>
                     <span class="p">(</span><span class="nv">font-spec</span> <span class="ss">:family</span> <span class="s">"微软雅黑"</span> <span class="ss">:size</span> <span class="mi">12</span><span class="p">)))</span><span class="w">
-</span></pre></td></tr></tbody></table></code></pre></figure></p>
+</span></pre></td></tr></tbody></table></code></pre></figure>
 
-<p>eval之后，渲染果然好多了，但是保存<code>.emacs</code>之后，新开一个emacs，又变回以前那种渲染了，经过又一次的百思不得其解之后，还是去翻文档，试着把<code>set-fontset-font</code>的第一个参数，即<code>(frame-parameter nil 'font)</code>，改成<code>"fontset-default"</code>，保存，重启，ok了。
+<p>eval之后，渲染果然好多了，但是保存<code>.emacs</code>之后，新开一个emacs，又变回以前那种渲染了，经过又一次的百思不得其解之后，还是去翻文档，试着把<code>set-fontset-font</code>的第一个参数，即<code>(frame-parameter nil &#39;font)</code>，改成<code>&quot;fontset-default&quot;</code>，保存，重启，ok了。
 然后设置英文字体，把其中的<code>Bitstream Vera Sans Mono</code>换成你想要的字体名就行了，比如<code>Consolas</code></p>
 
-<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1</pre></td><td class="code"><pre><span class="p">(</span><span class="nv">set-face-attribute</span> <span class="ss">'default</span> <span class="no">nil</span> <span class="ss">:font</span> <span class="s">"Bitstream Vera Sans Mono-10"</span><span class="p">)</span><span class="w">
-</span></pre></td></tr></tbody></table></code></pre></figure></p>
+<figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1</pre></td><td class="code"><pre><span class="p">(</span><span class="nv">set-face-attribute</span> <span class="ss">'default</span> <span class="no">nil</span> <span class="ss">:font</span> <span class="s">"Bitstream Vera Sans Mono-10"</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure>
 
 <p>ps: 在这里强烈推荐一下<a href="http://ftp.gnome.org/pub/GNOME/sources/ttf-bitstream-vera/1.10/">Bitstream Vera Sans Mono</a>，非常耐看的字体，再配上mactype的渲染简直完美（*nix个发行版的桌面一般自带比windows好看的多的渲染，mac就更不用说了）;)。</p>
 
 <p>接下来把那个烦人的工具栏去掉</p>
 
-<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+<figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
 2</pre></td><td class="code"><pre><span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="nb">fboundp</span> <span class="ss">'tool-bar-mode</span><span class="p">)</span>
   <span class="p">(</span><span class="nv">tool-bar-mode</span> <span class="mi">-1</span><span class="p">))</span><span class="w">
-</span></pre></td></tr></tbody></table></code></pre></figure></p>
+</span></pre></td></tr></tbody></table></code></pre></figure>
 
 <p>其中在设置之前检测一下应该是为了兼容<code>nw</code>模式（因为既然在控制台下，工具栏什么的肯定是没有的吧）。如果你也不喜欢菜单栏，可以照葫芦画瓢，设置<code>menu-bar-mode</code>为<code>-1</code>。</p>
 
 <p>然后把总是在响的bell给关掉</p>
 
-<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1</pre></td><td class="code"><pre><span class="p">(</span><span class="k">setq</span> <span class="nv">visible-bell</span> <span class="no">t</span><span class="p">)</span><span class="w">
-</span></pre></td></tr></tbody></table></code></pre></figure></p>
+<figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1</pre></td><td class="code"><pre><span class="p">(</span><span class="k">setq</span> <span class="nv">visible-bell</span> <span class="no">t</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure>
 
 <p>值得一提的是<code>setq</code>（set quoted）与<code>set</code>的区别，基本可以理解为以下两个表达式等价</p>
 
-<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+<figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
 2</pre></td><td class="code"><pre><span class="p">(</span><span class="k">setq</span> <span class="nv">some-variable</span> <span class="no">t</span><span class="p">)</span>
 <span class="p">(</span><span class="nb">set</span> <span class="ss">'some-variable</span> <span class="no">t</span><span class="p">)</span><span class="w">
-</span></pre></td></tr></tbody></table></code></pre></figure></p>
+</span></pre></td></tr></tbody></table></code></pre></figure>
 
 <p>然后设置主题，
-我试过用<code>M-x package-install</code>装color-theme，也试过直接从color-theme的官网上下zip，在emacs24下都有问题：<code>Symbol's function definition is void: plist-to-alist</code>，去源码里一看，调用<code>plist-to-alist</code>的那句后面写着<code>XEmacs only</code>-_-|，试过把这句注释，或者加个<code>plist-to-alist</code>的假实现，都不行。最后看了一个stackoverflow的回答说emacs24自带了主题管理（好像以前的版本也有？），先在buffer里用<code>M-x customize-themes</code>看所有的主题，选一个，然后在<code>.emacs</code>里加入</p>
+我试过用<code>M-x package-install</code>装color-theme，也试过直接从color-theme的官网上下zip，在emacs24下都有问题：<code>Symbol&#39;s function definition is void: plist-to-alist</code>，去源码里一看，调用<code>plist-to-alist</code>的那句后面写着<code>XEmacs only</code>-_-|，试过把这句注释，或者加个<code>plist-to-alist</code>的假实现，都不行。最后看了一个stackoverflow的回答说emacs24自带了主题管理（好像以前的版本也有？），先在buffer里用<code>M-x customize-themes</code>看所有的主题，选一个，然后在<code>.emacs</code>里加入</p>
 
-<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1</pre></td><td class="code"><pre><span class="p">(</span><span class="nv">load-theme</span> <span class="ss">'wheatgrass</span> <span class="no">t</span><span class="p">)</span><span class="w">
-</span></pre></td></tr></tbody></table></code></pre></figure></p>
+<figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1</pre></td><td class="code"><pre><span class="p">(</span><span class="nv">load-theme</span> <span class="ss">'wheatgrass</span> <span class="no">t</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure>
 
 <p>外观这部分最后要说的是两个插件：tabbar和lineno
 但是在说tabbar的配置之前，要说一下emacs的package管理器的配置</p>
 
-<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+<figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
 2
 3
 4</pre></td><td class="code"><pre><span class="p">(</span><span class="nb">require</span> <span class="ss">'package</span><span class="p">)</span>
 <span class="p">(</span><span class="nv">add-to-list</span> <span class="ss">'package-archives</span>
              <span class="o">'</span><span class="p">(</span><span class="s">"marmalade"</span> <span class="o">.</span> <span class="s">"http://marmalade-repo.org/packages/"</span><span class="p">))</span>
 <span class="p">(</span><span class="nv">package-initialize</span><span class="p">)</span><span class="w">
-</span></pre></td></tr></tbody></table></code></pre></figure></p>
+</span></pre></td></tr></tbody></table></code></pre></figure>
 
-<p>具体来说就是将"marmalade"和这个repo的url作为一个cons存进<code>package-archives</code>里。
+<p>具体来说就是将&quot;marmalade&quot;和这个repo的url作为一个cons存进<code>package-archives</code>里。
 以后要安装什么插件，一般可以直接用命令<code>M-x package-install xxx</code>（以下简称pac-ins）安装。</p>
 
 <p>首先用pac-ins安装lineno，然后在<code>(package-initialize)</code>后面加入</p>
 
-<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1</pre></td><td class="code"><pre><span class="p">(</span><span class="nv">linum-mode</span> <span class="no">t</span><span class="p">)</span><span class="w">
-</span></pre></td></tr></tbody></table></code></pre></figure></p>
+<figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1</pre></td><td class="code"><pre><span class="p">(</span><span class="nv">linum-mode</span> <span class="no">t</span><span class="p">)</span><span class="w">
+</span></pre></td></tr></tbody></table></code></pre></figure>
 
 <p>注意，所有跟用pac-ins安装的插件有关的代码都只能写在<code>(package-initialize)</code>后面，否则会提示找不到变量之类的错误。</p>
 
 <p>然后安装tabbar，并加入以下代码</p>
 
-<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+<figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
 2</pre></td><td class="code"><pre><span class="p">(</span><span class="nb">require</span> <span class="ss">'tabbar</span><span class="p">)</span>
 <span class="p">(</span><span class="nv">tabbar-mode</span> <span class="no">t</span><span class="p">)</span><span class="w">
-</span></pre></td></tr></tbody></table></code></pre></figure></p>
+</span></pre></td></tr></tbody></table></code></pre></figure>
 
 <p>重启之后就可以看到buffer上面都多了一行tab。</p>
 
 <p>为了更加方便地使用tabbar，可以绑定两个快捷键到tabbar-xward上，比如</p>
 
-<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+<figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
 2</pre></td><td class="code"><pre><span class="p">(</span><span class="nv">global-set-key</span> <span class="p">(</span><span class="nv">kbd</span> <span class="s">"M-j"</span><span class="p">)</span> <span class="ss">'tabbar-backward</span><span class="p">)</span>
 <span class="p">(</span><span class="nv">global-set-key</span> <span class="p">(</span><span class="nv">kbd</span> <span class="s">"M-k"</span><span class="p">)</span> <span class="ss">'tabbar-forward</span><span class="p">)</span><span class="w">
-</span></pre></td></tr></tbody></table></code></pre></figure></p>
+</span></pre></td></tr></tbody></table></code></pre></figure>
 
 <p>另外，如果你觉得默认的样式很丑，可以用下面的代码来自定义，修改自<a href="http://blog.csdn.net/CherylNatsu/article/details/6204737">这篇文章</a>。</p>
 
-<p><figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
+<figure class="highlight"><pre><code class="language-cl" data-lang="cl"><table style="border-spacing: 0"><tbody><tr><td class="gutter gl" style="text-align: right"><pre class="lineno">1
 2
 3
 4
@@ -244,12 +246,12 @@
                <span class="ss">:style</span> <span class="nv">released-button</span><span class="p">))</span>
 <span class="p">(</span><span class="nv">set-face-attribute</span> <span class="ss">'tabbar-separator</span> <span class="no">nil</span>
             <span class="ss">:height</span> <span class="mf">0.7</span><span class="p">)</span><span class="w">
-</span></pre></td></tr></tbody></table></code></pre></figure></p>
+</span></pre></td></tr></tbody></table></code></pre></figure>
 
 <p>在那篇文章里，所有的<code>set-face-attribute</code>的第一个参数都以<code>-face</code>结尾，但是到我这来就没有了，所以直接copy过来是不能跑的。看了tabbar.el，那些face都是没有<code>-face</code>的，只好跟着把<code>-face</code>去掉了，重启一下，可以发现样式改过来了。</p>
 
 <p>附上emacs截图一张
-<img src="/assets/images/emacs-summary/emacs-screenshot.png" alt="截图" /></p>
+<img src="/assets/images/emacs-summary/emacs-screenshot.png" alt="截图"></p>
 
 <p>未完待续...</p>
 
