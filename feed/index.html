@@ -7,7 +7,7 @@
     <title>qwert42</title>
     <link href="http://qwert42.github.io/feed/" rel="self" />
     <link href="http://webfrogs.github.com" />
-    <lastBuildDate>2016-01-30T03:33:56-05:00</lastBuildDate>
+    <lastBuildDate>2016-02-01T02:15:56-05:00</lastBuildDate>
     <webMaster>ccf.developer@gmail.com</webMaster>
     
     <item>
@@ -734,6 +734,58 @@
 <h3>给出一种将由树组成的<code>[]</code>转换成由<code>[]</code>组成的树的方法</h3>
 
 <p>可以将列表里的树按照坐标zip起来。</p>
+
+<p>以下是另一种解法：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="kr">data</span> <span class="kt">MT</span> <span class="n">a</span> <span class="o">=</span> <span class="kt">Nd</span> <span class="n">a</span> <span class="p">(</span><span class="kt">MT</span> <span class="n">a</span><span class="p">)</span> <span class="p">(</span><span class="kt">MT</span> <span class="n">a</span><span class="p">)</span> <span class="o">|</span> <span class="kt">MN</span>
+  <span class="kr">deriving</span> <span class="kt">Show</span>
+
+<span class="kr">instance</span> <span class="kt">Monoid</span> <span class="n">a</span> <span class="o">=&gt;</span> <span class="kt">Monoid</span> <span class="p">(</span><span class="kt">MT</span> <span class="n">a</span><span class="p">)</span> <span class="kr">where</span>
+  <span class="n">mempty</span> <span class="o">=</span> <span class="kt">MN</span>
+  <span class="kt">MN</span> <span class="p">`</span><span class="n">mappend</span><span class="p">`</span> <span class="n">a</span> <span class="o">=</span> <span class="n">a</span>
+  <span class="n">a</span> <span class="p">`</span><span class="n">mappend</span><span class="p">`</span> <span class="kt">MN</span> <span class="o">=</span> <span class="n">a</span>
+  <span class="kt">Nd</span> <span class="n">xs</span> <span class="n">l</span> <span class="n">r</span> <span class="p">`</span><span class="n">mappend</span><span class="p">`</span> <span class="kt">Nd</span> <span class="n">ys</span> <span class="n">p</span> <span class="n">q</span> <span class="o">=</span> <span class="kt">Nd</span> <span class="p">(</span><span class="n">xs</span> <span class="p">`</span><span class="n">mappend</span><span class="p">`</span> <span class="n">ys</span><span class="p">)</span>
+                                  <span class="p">(</span><span class="n">l</span> <span class="p">`</span><span class="n">mappend</span><span class="p">`</span> <span class="n">p</span><span class="p">)</span>
+                                  <span class="p">(</span><span class="n">r</span> <span class="p">`</span><span class="n">mappend</span><span class="p">`</span> <span class="n">q</span><span class="p">)</span>
+</code></pre></div>
+<p>将一个包含具体元素的树lift成元素为在该节点可能出现的值：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">conformToMT</span> <span class="o">::</span> <span class="p">[</span><span class="kt">MT</span> <span class="n">a</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="kt">MT</span> <span class="p">[</span><span class="n">a</span><span class="p">]]</span>
+<span class="n">conformToMT</span> <span class="o">=</span> <span class="n">map</span> <span class="n">lift_to_list</span>
+  <span class="kr">where</span> <span class="n">lift_to_list</span> <span class="o">::</span> <span class="kt">MT</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="kt">MT</span> <span class="p">[</span><span class="n">a</span><span class="p">]</span>
+        <span class="n">lift_to_list</span> <span class="p">(</span><span class="kt">Nd</span> <span class="n">a</span> <span class="n">l</span> <span class="n">r</span><span class="p">)</span> <span class="o">=</span> <span class="kt">Nd</span> <span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="p">(</span><span class="n">lift_to_list</span> <span class="n">l</span><span class="p">)</span> <span class="p">(</span><span class="n">lift_to_list</span> <span class="n">r</span><span class="p">)</span>
+        <span class="n">lift_to_list</span> <span class="kt">MN</span> <span class="o">=</span> <span class="kt">MN</span>
+</code></pre></div>
+<p>然后就可以利用<code>foldMap</code>将两个<code>MT [a]</code>给<code>(&lt;+&gt;)</code>（<code>mappend</code>）起来：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">treesToLists</span> <span class="o">::</span> <span class="p">[</span><span class="kt">MT</span> <span class="n">a</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="kt">MT</span> <span class="p">[</span><span class="n">a</span><span class="p">]</span>
+<span class="n">treesToLists</span> <span class="o">=</span> <span class="n">foldMap</span> <span class="n">id</span> <span class="o">.</span> <span class="n">conformToMT</span>
+</code></pre></div>
+<h3>只使用<code>Traversable</code>方法实现<code>fmap</code>与<code>foldMap</code></h3>
+
+<p>首先观察相关方法的类型：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">fmap</span> <span class="o">::</span> <span class="kt">Functor</span> <span class="n">f</span> <span class="o">=&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">b</span>
+<span class="n">traverse</span> <span class="o">::</span> <span class="p">(</span><span class="kt">Applicative</span> <span class="n">f</span><span class="p">,</span> <span class="kt">Traversable</span> <span class="n">t</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="p">(</span><span class="n">t</span> <span class="n">b</span><span class="p">)</span>
+</code></pre></div>
+<p>可以观察到他们俩类型的结构是差不多的，都是两个参数：一个一元函数，一个带上下文的值，返回一个带上下文的结果。如果取<code>traverse</code>中的<code>f</code>为恒等应用函子（<code>Identity a</code>），那么<code>traverse</code>的类型会变为：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">traverse</span> <span class="o">::</span> <span class="kt">Traversable</span> <span class="n">t</span> <span class="o">=&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="kt">Id</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="kt">Id</span> <span class="p">(</span><span class="n">t</span> <span class="n">b</span><span class="p">)</span>
+</code></pre></div>
+<p>也就是如果将<code>fmap</code>中的那个函数参数与<code>Id</code>这个构造器函数复合，就可以利用<code>traverse</code>了。只要最后用<code>getId</code>将结果从恒等应用函子中取出就行了。</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">fmap</span> <span class="n">f</span> <span class="o">=</span> <span class="n">getId</span> <span class="o">.</span> <span class="n">traverse</span> <span class="p">(</span><span class="kt">Id</span> <span class="o">.</span> <span class="n">f</span><span class="p">)</span>
+</code></pre></div>
+<p>接下来是<code>foldMap</code>：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">foldMap</span> <span class="o">::</span> <span class="p">(</span><span class="kt">Monoid</span> <span class="n">o</span><span class="p">,</span> <span class="kt">Foldable</span> <span class="n">f</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">o</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">o</span>
+<span class="n">traverse</span> <span class="o">::</span> <span class="p">(</span><span class="kt">Applicative</span> <span class="n">f</span><span class="p">,</span> <span class="kt">Traversable</span> <span class="n">t</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">f</span> <span class="p">(</span><span class="n">t</span> <span class="n">b</span><span class="p">)</span>
+</code></pre></div>
+<p>同样，它们的结构很相似。但是<code>foldMap</code>比<code>traverse</code>多出一个幺半群的限制，即按照刚刚实现<code>fmap</code>的思路，上面<code>traverse</code>中<code>b</code>的类型应该有一个幺半群限制。同时，因为我们知道<code>foldMap</code>是将折子中所有的元素都<code>(&lt;+&gt;)</code>起来，而<code>traverse</code>是将遍子中所有的元素用<code>(&lt;*&gt;)</code>合起来，所以我们要构建的一个应用函子<code>f a</code>应该具有这样的性质：即当<code>a</code>为幺半群时，<code>F a1 &lt;*&gt; F a2 = F (a1 &lt;+&gt; a2)</code>。我们当然可以自己构建一个这样的应用函子，也可以使用<code>Control.Applicative</code>模块里已经提供给我们的</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="kr">newtype</span> <span class="kt">Const</span> <span class="n">a</span> <span class="n">b</span> <span class="o">=</span> <span class="kt">Const</span> <span class="p">{</span> <span class="n">getConst</span> <span class="o">::</span> <span class="n">a</span> <span class="p">}</span>
+</code></pre></div>
+<p><code>Const a b</code>满足，如果<code>a</code>是一个幺半群，那么<code>Const a b</code>是一个幺半群，同时满足当<code>a1</code>与<code>a2</code>是幺半群时，<code>Const a1 &lt;*&gt; Const a2 = Const (a1 &lt;+&gt; a2)</code>。如果将<code>f</code>换为<code>Const a b</code>应用函子，那么<code>traverse</code>的类型会变成：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">traverse</span> <span class="o">::</span> <span class="kt">Traversable</span> <span class="n">t</span> <span class="o">=&gt;</span> <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="kt">Const</span> <span class="n">b</span> <span class="n">c</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="kt">Const</span> <span class="p">(</span><span class="n">t</span> <span class="n">b</span><span class="p">)</span> <span class="n">c</span>
+</code></pre></div>
+<p>当<code>Const a b</code>中的<code>a</code>是一个幺半群时，<code>Const a b</code>是一个幺半群：</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="n">traverse</span> <span class="o">::</span> <span class="p">(</span><span class="kt">Traversable</span> <span class="n">t</span><span class="p">,</span> <span class="kt">Monoid</span> <span class="n">b</span><span class="p">)</span> <span class="o">=&gt;</span>
+            <span class="p">(</span><span class="n">a</span> <span class="o">-&gt;</span> <span class="kt">Const</span> <span class="n">b</span> <span class="n">c</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="kt">Const</span> <span class="p">(</span><span class="n">t</span> <span class="n">b</span><span class="p">)</span> <span class="n">c</span>
+<span class="n">foldMap</span> <span class="n">f</span> <span class="o">=</span> <span class="n">getConst</span> <span class="o">.</span> <span class="n">traverse</span> <span class="p">(</span><span class="kt">Const</span> <span class="o">.</span> <span class="n">f</span><span class="p">)</span>
+</code></pre></div>
+<p>反过来推算这个<code>foldMap</code>的类型：<code>f</code>必须是<code>Monoid b =&gt; a -&gt; b</code>才能使得<code>Const . f</code>满足<code>Monoid b =&gt; Const b c</code>，这样<code>traverse</code>还剩下一个<code>Traversable :: t a</code>类型的参数，也就是<code>foldMap</code>还剩下一个这样的参数。返回值应该是<code>Const b (t c)</code>剥掉<code>Const</code>之后的<code>b</code>。（因为在<code>(&lt;*&gt;)</code>运算中，虽然是<code>b</code>参与了运算（并且类型不变），但在Haskell的类型系统中名义上进行运算的是<code>c</code>，而且因为<code>traverse</code>的原因<code>c</code>会变为<code>t c</code>。）</p>
 ]]></content:encoded>
     </item>
     
