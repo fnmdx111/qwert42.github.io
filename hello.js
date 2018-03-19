@@ -3,10 +3,14 @@ const ALL_MY_MUSIC = Immutable.List(['桜 - Reven-G', 'SAMURAI-Scramble - DJ Mas
 const CANDIDATE_NUM = 15;
 const TOP_NUM = 10;
 
+const state_stack = [];
+
 $(window).on('load', () => {
 
     function iter(data, $anchor) {
         $anchor.empty();
+
+        $anchor.append($(`<p>>${data.size}/${ALL_MY_MUSIC.size}</p>`));
 
         if (data.size <= TOP_NUM) {
             data.forEach(final => $('<p>').text(final).appendTo($anchor));
@@ -37,11 +41,28 @@ $(window).on('load', () => {
             .text('Done')
             .appendTo($anchor);
 
+        let back_up = $('<button>', {
+            type: "button",
+            text: "Back up"
+        }).appendTo($anchor);
+
         accept.on('click', () => {
             let checked = Immutable.List($('.candidate:checked').toArray().map(e => $(e).val()));
             let this_round_selected = checked.size;
+            state_stack.push([candidates, checked]);
             iter(data.skip(CANDIDATE_NUM).concat(checked), $anchor);
         });
+
+        back_up.on('click', () => {
+            if (state_stack.length === 0) {
+                alert('Cannot go back!');
+                return;
+            }
+
+            let last_state = state_stack.pop();
+            let newly_added_num = last_state[1].size;
+            iter(last_state[0].concat(data.take(data.size - newly_added_num)), $anchor);
+        })
     }
 
     iter(ALL_MY_MUSIC, $('#my-fav'));
